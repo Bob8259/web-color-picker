@@ -13,23 +13,23 @@
         :style="crosshairStyle"
       >
         <div class="w-6 h-6 relative">
-          <div class="absolute top-1/2 left-0 w-full h-[1px] bg-red-500 -translate-y-1/2"></div>
-          <div class="absolute left-1/2 top-0 h-full w-[1px] bg-red-500 -translate-x-1/2"></div>
-          <div class="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full border border-red-500 bg-transparent -translate-x-1/2 -translate-y-1/2"></div>
+          <div class="absolute top-1/2 left-0 w-full h-[1px] bg-rose-500 shadow-sm -translate-y-1/2"></div>
+          <div class="absolute left-1/2 top-0 h-full w-[1px] bg-rose-500 shadow-sm -translate-x-1/2"></div>
+          <div class="absolute top-1/2 left-1/2 w-1.5 h-1.5 rounded-full border border-rose-500 bg-transparent shadow-sm -translate-x-1/2 -translate-y-1/2"></div>
         </div>
       </div>
 
       <!-- Region Selection Preview (while dragging) -->
       <div
         v-if="previewRegionStyle"
-        class="absolute pointer-events-none z-10 border-2 border-dashed border-blue-400 bg-blue-400/10"
+        class="absolute pointer-events-none z-10 border-2 border-dashed border-indigo-400 bg-indigo-400/10"
         :style="previewRegionStyle"
       ></div>
 
       <!-- Finalized Region Overlay -->
       <div
         v-if="regionStyle && !isSelecting"
-        class="absolute pointer-events-none z-10 border-2 border-blue-500 bg-blue-500/10"
+        class="absolute pointer-events-none z-10 border-2 border-indigo-500 bg-indigo-500/10"
         :style="regionStyle"
       >
         <!-- Auto-picked color dots -->
