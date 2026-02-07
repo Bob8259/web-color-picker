@@ -19,7 +19,7 @@
         <div v-else class="w-8 h-8 border border-dashed border-slate-200 rounded-md flex-shrink-0 bg-slate-50"></div>
         
         <div class="min-w-0 flex-1">
-          <div v-if="color" class="text-xs font-mono font-bold truncate text-slate-700">{{ color.hex }}</div>
+          <div v-if="color" class="text-xs font-mono font-bold truncate text-slate-700">{{ color.bgrHex }}</div>
           <div v-else class="text-xs text-slate-400 italic">Empty</div>
         </div>
 

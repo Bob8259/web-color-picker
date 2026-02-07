@@ -70,7 +70,7 @@
                       class="w-5 h-5 border border-slate-200 rounded shadow-sm"
                       :style="{ backgroundColor: hoverColor.hex }"
                     ></div>
-                    <div class="font-mono font-bold text-slate-700 text-sm">{{ hoverColor.hex }}</div>
+                    <div class="font-mono font-bold text-slate-700 text-sm">{{ hoverColor.bgrHex }}</div>
                   </div>
                   <div class="font-mono text-[10px] text-slate-500 space-y-0.5">
                     <div class="flex justify-between"><span>Pos:</span> <span class="text-slate-700">{{ hoverColor.x }}, {{ hoverColor.y }}</span></div>

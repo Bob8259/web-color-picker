@@ -19,6 +19,11 @@ export function useColorPicker(
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase()
   }
 
+  // Utility: BGR to hex string
+  function bgrToHex(r: number, g: number, b: number): string {
+    return '#' + [b, g, r].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase()
+  }
+
   // Read pixel color at image coordinates
   function getPixelColor(imgX: number, imgY: number): ColorInfo | null {
     const canvas = canvasRef.value
@@ -33,7 +38,15 @@ export function useColorPicker(
     const r = pixel[0] ?? 0
     const g = pixel[1] ?? 0
     const b = pixel[2] ?? 0
-    return { x, y, r, g, b, hex: rgbToHex(r, g, b) }
+    return {
+      x,
+      y,
+      r,
+      g,
+      b,
+      hex: rgbToHex(r, g, b),
+      bgrHex: bgrToHex(r, g, b)
+    }
   }
 
   // Convert mouse offset (CSS pixels) to image pixel coordinates

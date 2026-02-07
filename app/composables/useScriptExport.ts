@@ -17,13 +17,13 @@ export function useScriptExport(
     const first = colors[0]!
 
     // First color hex (without #)
-    const firstHex = first.hex.replace('#', '')
+    const firstHex = first.bgrHex.replace('#', '')
 
     // Remaining colors as "dx|dy|HEX" relative to first point
     const rest = colors.slice(1).map(c => {
       const dx = c.x - first.x
       const dy = c.y - first.y
-      const hex = c.hex.replace('#', '')
+      const hex = c.bgrHex.replace('#', '')
       return `${dx}|${dy}|${hex}`
     }).join(',')
 

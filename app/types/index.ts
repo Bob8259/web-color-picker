@@ -4,7 +4,8 @@ export interface ColorInfo {
   r: number
   g: number
   b: number
-  hex: string // e.g. "#8684FF"
+  hex: string // RGB hex, e.g. "#RRGGBB"
+  bgrHex: string // BGR hex for OpenCV, e.g. "#BBGGRR"
 }
 
 export interface Region {
