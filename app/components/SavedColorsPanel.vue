@@ -6,33 +6,32 @@
       </h2>
       <p class="text-xs text-gray-400 mt-0.5">Press Ctrl+1~0 to save color at cursor</p>
     </div>
-    <div class="overflow-y-auto p-3 space-y-2">
+    <div class="p-3 grid grid-cols-2 gap-2">
       <div
         v-for="(color, index) in savedColors"
         :key="index"
-        class="rounded-lg border transition-all duration-200"
+        class="rounded-lg border transition-all duration-200 relative group"
         :class="color ? 'border-violet-200 bg-white shadow-sm' : 'border-dashed border-gray-200 bg-gray-50/50'"
       >
-        <div v-if="color" class="p-3">
-          <div class="flex items-center gap-3">
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <span class="text-xs font-bold text-violet-500 w-5">{{ index + 1 }}</span>
-              <div
-                class="w-10 h-10 rounded-lg border border-gray-200 shadow-inner flex-shrink-0"
-                :style="{ backgroundColor: color.hex }"
-              ></div>
-            </div>
-            <div class="flex flex-col gap-0.5 min-w-0 font-mono text-xs">
-              <div class="font-bold text-sm text-gray-800">{{ color.hex }}</div>
-              <div class="text-gray-500">RGB({{ color.r }}, {{ color.g }}, {{ color.b }})</div>
-              <div class="text-gray-400">Position: ({{ color.x }}, {{ color.y }})</div>
-            </div>
+        <div v-if="color" class="p-2 flex items-center gap-2">
+          <div
+            class="w-8 h-8 rounded-md border border-gray-200 shadow-inner flex-shrink-0"
+            :style="{ backgroundColor: color.hex }"
+          ></div>
+          <div class="flex flex-col min-w-0 font-mono">
+            <div class="font-bold text-[0.7rem] text-gray-800 leading-tight">{{ color.hex }}</div>
+            <div class="text-[0.6rem] text-gray-400 leading-tight">({{ color.x }}, {{ color.y }})</div>
           </div>
+          <span class="absolute -top-1.5 -left-1.5 w-4 h-4 bg-violet-500 text-white text-[0.6rem] font-bold rounded-full flex items-center justify-center shadow-sm z-10">
+            {{ index === 9 ? 0 : index + 1 }}
+          </span>
         </div>
-        <div v-else class="p-3 flex items-center gap-3">
-          <span class="text-xs font-bold text-gray-300 w-5">{{ index + 1 }}</span>
-          <div class="w-10 h-10 rounded-lg border-2 border-dashed border-gray-200 flex-shrink-0"></div>
-          <span class="text-xs text-gray-300 italic">Empty — Ctrl+{{ index === 9 ? '0' : index + 1 }}</span>
+        <div v-else class="p-2 flex items-center gap-2 opacity-60">
+          <div class="w-8 h-8 rounded-md border-2 border-dashed border-gray-200 flex-shrink-0"></div>
+          <div class="text-[0.6rem] text-gray-300 italic leading-tight">Empty</div>
+          <span class="absolute -top-1.5 -left-1.5 w-4 h-4 bg-gray-200 text-gray-400 text-[0.6rem] font-bold rounded-full flex items-center justify-center">
+            {{ index === 9 ? 0 : index + 1 }}
+          </span>
         </div>
       </div>
     </div>

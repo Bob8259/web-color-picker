@@ -93,5 +93,9 @@ export function useColorPicker(
     imageToCssCoords,
     saveColorToSlot,
     resetCursorToCenter,
+    saveSpecificColorToSlot: (color: ColorInfo, slotIndex: number) => {
+      savedColors.value[slotIndex] = { ...color }
+      savedColors.value = [...savedColors.value]
+    }
   }
 }

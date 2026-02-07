@@ -134,6 +134,7 @@
               v-model:auto-pick-enabled="autoPickEnabled"
               :auto-picked-colors="autoPickedColors"
               @clear-region="clearRegion"
+              @save-color="saveSpecificColorToSlot"
             />
           </div>
 
@@ -185,6 +186,7 @@ const {
   cssToImageCoords,
   imageToCssCoords,
   saveColorToSlot,
+  saveSpecificColorToSlot,
   resetCursorToCenter
 } = useColorPicker(canvasRef, imageLoaded)
 

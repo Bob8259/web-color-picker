@@ -44,7 +44,7 @@
           <div
             v-for="(color, idx) in autoPickedColors"
             :key="idx"
-            class="flex items-center gap-2 bg-white rounded-md p-1.5 border border-gray-100"
+            class="flex items-center gap-2 bg-white rounded-md p-1.5 border border-gray-100 group"
           >
             <div
               class="w-6 h-6 rounded border border-gray-200 flex-shrink-0"
@@ -56,6 +56,18 @@
               <span v-if="idx > 0" class="text-blue-500 ml-1">
                 Δ{{ color.x - autoPickedColors[0]!.x }},{{ color.y - autoPickedColors[0]!.y }}
               </span>
+            </div>
+            <!-- Save to slot buttons -->
+            <div class="hidden group-hover:flex items-center gap-0.5">
+              <button
+                v-for="slot in [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]"
+                :key="slot"
+                @click="$emit('saveColor', color, slot === 0 ? 9 : slot - 1)"
+                class="w-3.5 h-3.5 flex items-center justify-center bg-violet-50 text-violet-500 border border-violet-100 rounded-[2px] text-[0.5rem] hover:bg-violet-500 hover:text-white transition-colors"
+                :title="`Save to slot ${slot}`"
+              >
+                {{ slot }}
+              </button>
             </div>
           </div>
         </div>
@@ -89,5 +101,6 @@ defineProps<{
 defineEmits<{
   'update:autoPickEnabled': [value: boolean]
   'clearRegion': []
+  'saveColor': [color: ColorInfo, slotIndex: number]
 }>()
 </script>
