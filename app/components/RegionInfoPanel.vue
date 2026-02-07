@@ -37,41 +37,6 @@
         </div>
       </div>
 
-      <!-- Auto-picked Colors -->
-      <div v-if="autoPickedColors.length > 0">
-        <div class="text-xs text-gray-500 mb-1.5">Auto-picked Colors ({{ autoPickedColors.length }})</div>
-        <div class="space-y-1 max-h-[200px] overflow-y-auto">
-          <div
-            v-for="(color, idx) in autoPickedColors"
-            :key="idx"
-            class="flex items-center gap-2 bg-white rounded-md p-1.5 border border-gray-100 group"
-          >
-            <div
-              class="w-6 h-6 rounded border border-gray-200 flex-shrink-0"
-              :style="{ backgroundColor: color.hex }"
-            ></div>
-            <div class="flex-1 min-w-0 font-mono text-[0.65rem]">
-              <span class="font-bold text-gray-700">{{ color.hex }}</span>
-              <span class="text-gray-400 ml-1">({{ color.x }}, {{ color.y }})</span>
-              <span v-if="idx > 0" class="text-blue-500 ml-1">
-                Δ{{ color.x - autoPickedColors[0]!.x }},{{ color.y - autoPickedColors[0]!.y }}
-              </span>
-            </div>
-            <!-- Save to slot buttons -->
-            <div class="hidden group-hover:flex items-center gap-0.5">
-              <button
-                v-for="slot in [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]"
-                :key="slot"
-                @click="$emit('saveColor', color, slot === 0 ? 9 : slot - 1)"
-                class="w-3.5 h-3.5 flex items-center justify-center bg-violet-50 text-violet-500 border border-violet-100 rounded-[2px] text-[0.5rem] hover:bg-violet-500 hover:text-white transition-colors"
-                :title="`Save to slot ${slot}`"
-              >
-                {{ slot }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Clear Region Button -->
       <button
@@ -95,12 +60,10 @@ import type { ColorInfo, Region } from '~/types'
 defineProps<{
   region: Region | null
   autoPickEnabled: boolean
-  autoPickedColors: ColorInfo[]
 }>()
 
 defineEmits<{
   'update:autoPickEnabled': [value: boolean]
   'clearRegion': []
-  'saveColor': [color: ColorInfo, slotIndex: number]
 }>()
 </script>

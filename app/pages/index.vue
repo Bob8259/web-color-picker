@@ -132,9 +132,7 @@
             <RegionInfoPanel
               :region="region"
               v-model:auto-pick-enabled="autoPickEnabled"
-              :auto-picked-colors="autoPickedColors"
               @clear-region="clearRegion"
-              @save-color="saveSpecificColorToSlot"
             />
           </div>
 
@@ -343,6 +341,17 @@ watch(imageLoaded, (loaded) => {
   if (loaded) {
     resetCursorToCenter()
     nextTick(() => drawMagnifier())
+  }
+})
+
+// Watch for auto-picked colors to automatically save them to slots
+watch(autoPickedColors, (newColors) => {
+  if (newColors.length > 0) {
+    newColors.forEach((color, index) => {
+      if (index < 10) {
+        saveSpecificColorToSlot(color, index)
+      }
+    })
   }
 })
 </script>

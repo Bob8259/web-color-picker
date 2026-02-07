@@ -10,7 +10,7 @@ export function useRegionSelection(
   const isSelecting = ref(false)
   const selectionStart = ref({ x: 0, y: 0 })
   const selectionCurrent = ref({ x: 0, y: 0 })
-  const autoPickEnabled = ref(false)
+  const autoPickEnabled = ref(true)
   const autoPickedColors = ref<ColorInfo[]>([])
 
   // Start region selection (image coordinates)
