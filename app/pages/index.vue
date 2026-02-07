@@ -25,6 +25,7 @@
           <!-- Canvas Container -->
           <div class="flex-1 relative overflow-hidden flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
             <ImageCanvas
+              ref="imageCanvasRef"
               :image-loaded="imageLoaded"
               :show-crosshair="showCrosshair"
               :crosshair-style="crosshairStyle"
@@ -33,6 +34,7 @@
               :is-selecting="isSelecting"
               :auto-picked-colors="autoPickedColors"
               :image-to-css-coords="imageToCssCoords"
+              @copy-position="copyPositionToClipboard"
             >
               <template #canvas>
                 <canvas
@@ -43,6 +45,7 @@
                   @mouseup="onCanvasMouseUp"
                   @mouseleave="onCanvasMouseLeave"
                   @mouseenter="onCanvasMouseEnter"
+                  @contextmenu="onCanvasContextMenu"
                 ></canvas>
               </template>
               <template #tooltip>
@@ -123,9 +126,10 @@
           <div class="flex-1 overflow-y-auto">
             <SavedColorsPanel :saved-colors="savedColors" />
             <RegionInfoPanel
-              :region="region"
+              v-model:region="region"
               v-model:auto-pick-enabled="autoPickEnabled"
               @clear-region="clearRegion"
+              @re-auto-select="autoPickColors"
             />
           </div>
           <div class="p-4 border-t border-gray-200 space-y-4">
@@ -152,6 +156,7 @@ import { useScriptExport } from '~/composables/useScriptExport'
 const appRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const magnifierRef = ref<HTMLCanvasElement | null>(null)
+const imageCanvasRef = ref<any>(null)
 
 const {
   images,
@@ -190,6 +195,7 @@ const {
   startSelection,
   updateSelection,
   endSelection,
+  autoPickColors,
   clearRegion
 } = useRegionSelection(canvasRef, getPixelColor)
 
@@ -265,6 +271,19 @@ function onCanvasMouseLeave() {
 
 function onCanvasMouseEnter() {
   showTooltip.value = true
+}
+
+function onCanvasContextMenu(event: MouseEvent) {
+  imageCanvasRef.value?.handleContextMenu(event)
+}
+
+async function copyPositionToClipboard() {
+  const pos = `${cursorPos.value.x}, ${cursorPos.value.y}`
+  try {
+    await navigator.clipboard.writeText(pos)
+  } catch (err) {
+    console.error('Failed to copy position: ', err)
+  }
 }
 
 function handleKeydown(event: KeyboardEvent) {

@@ -43,6 +43,24 @@
 
       <!-- Tooltip slot — rendered by parent so magnifier ref stays in parent scope -->
       <slot name="tooltip" />
+
+      <!-- Context Menu -->
+      <div
+        v-if="contextMenu.show"
+        class="fixed z-50 bg-white border border-slate-200 rounded-lg shadow-xl py-1 min-w-[120px]"
+        :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }"
+        @click.stop
+      >
+        <button
+          class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center gap-2"
+          @click="onCopyPosition"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          Copy Position
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -61,7 +79,47 @@ const props = defineProps<{
   imageToCssCoords: (imgX: number, imgY: number) => { x: number; y: number }
 }>()
 
+const emit = defineEmits<{
+  (e: 'copy-position'): void
+}>()
+
 const containerRef = ref<HTMLElement | null>(null)
+
+const contextMenu = reactive({
+  show: false,
+  x: 0,
+  y: 0
+})
+
+const closeContextMenu = () => {
+  contextMenu.show = false
+}
+
+const handleContextMenu = (e: MouseEvent) => {
+  e.preventDefault()
+  contextMenu.show = true
+  contextMenu.x = e.clientX
+  contextMenu.y = e.clientY
+}
+
+const onCopyPosition = () => {
+  emit('copy-position')
+  closeContextMenu()
+}
+
+onMounted(() => {
+  window.addEventListener('click', closeContextMenu)
+  window.addEventListener('contextmenu', closeContextMenu)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeContextMenu)
+  window.removeEventListener('contextmenu', closeContextMenu)
+})
+
+defineExpose({
+  handleContextMenu
+})
 
 // Region preview style (while dragging)
 const previewRegionStyle = computed(() => {
