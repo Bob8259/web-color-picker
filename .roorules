@@ -1,5 +1,5 @@
 You should try to use tailwind css as much as possible, and avoid using custom style unless you msut use it.
 
-You should read the full file whenever possible. The reading tools supports up to 4000 lines reading at a time.
+You should read the full file whenever possible. The reading tools supports up to 2000 lines reading at a time.
 
 You do not need to test your code. I will test it by my self.

@@ -1,40 +1,26 @@
 <template>
   <div
-    class="h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50 text-gray-800 font-sans flex flex-col outline-none overflow-hidden"
+    class="h-screen flex flex-col outline-none overflow-hidden bg-gray-100"
     @keydown="handleKeydown"
     tabindex="0"
     ref="appRef"
   >
     <!-- Header -->
-    <div class="flex items-center gap-6 w-full px-6 py-3 flex-shrink-0">
-      <h1 class="flex-1 text-2xl font-bold m-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-600 bg-clip-text text-transparent">
-        Color Picker
-      </h1>
-      <label class="px-5 py-2.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 text-white rounded-xl cursor-pointer text-[0.9rem] shadow-lg shadow-violet-200 transition-all duration-300 hover:from-violet-600 hover:via-fuchsia-600 hover:to-indigo-600 hover:shadow-xl hover:shadow-violet-300 hover:scale-105">
+    <div class="flex items-center justify-between px-4 py-2 bg-white border-b border-gray-300">
+      <h1 class="text-lg font-bold">Color Picker</h1>
+      <label class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm cursor-pointer">
         Select Images
         <input type="file" accept="image/*" multiple @change="onFilesSelected" class="hidden" />
       </label>
     </div>
 
-    <!-- Gradient Divider -->
-    <div class="w-full h-[2px] bg-gradient-to-r from-transparent via-violet-400 to-transparent flex-shrink-0"></div>
-
-    <!-- Main Content: Left (Image) + Right (Colors) -->
+    <!-- Main Content -->
     <div class="flex flex-1 min-h-0 w-full">
-
       <!-- Left Panel: Image Viewer -->
-      <div class="flex-[2] flex flex-col min-h-0 min-w-0 p-4">
+      <div class="flex-[3] flex flex-col min-h-0 min-w-0 p-4">
         <div v-if="images.length > 0" class="flex flex-col flex-1 min-h-0">
-          <!-- Image Navigation Row -->
-          <div class="flex items-center gap-3 flex-1 min-h-0">
-            <button
-              class="bg-white border border-gray-200 text-violet-500 text-2xl w-10 h-10 rounded-full cursor-pointer flex items-center justify-center flex-shrink-0 transition-all duration-300 leading-none shadow-sm hover:not-disabled:bg-gradient-to-br hover:not-disabled:from-violet-500 hover:not-disabled:to-indigo-500 hover:not-disabled:text-white hover:not-disabled:border-transparent hover:not-disabled:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-              @click="prevImage"
-              :disabled="currentIndex === 0"
-              aria-label="Previous image"
-            >‹</button>
-
-            <!-- Canvas Container -->
+          <!-- Canvas Container -->
+          <div class="flex-1 relative overflow-auto flex items-center justify-center bg-gray-200 border border-gray-300">
             <ImageCanvas
               :image-loaded="imageLoaded"
               :show-crosshair="showCrosshair"
@@ -48,7 +34,7 @@
               <template #canvas>
                 <canvas
                   ref="canvasRef"
-                  class="block max-w-full max-h-[calc(100vh-220px)] bg-white cursor-none"
+                  class="block bg-white cursor-none"
                   @mousedown="onCanvasMouseDown"
                   @mousemove="onCanvasMouseMove"
                   @mouseup="onCanvasMouseUp"
@@ -59,11 +45,11 @@
               <template #tooltip>
                 <div
                   v-if="showTooltip && hoverColor"
-                  class="absolute pointer-events-none z-20 bg-gray-900/90 backdrop-blur-sm text-white rounded-xl px-4 py-3 text-sm shadow-xl border border-white/10"
+                  class="absolute pointer-events-none z-20 bg-white border border-gray-400 p-2 text-xs shadow-md"
                   :style="tooltipStyle"
                 >
-                  <!-- Magnifier Canvas -->
-                  <div class="mb-2 rounded-lg overflow-hidden border border-white/20">
+                  <!-- Magnifier -->
+                  <div class="mb-2 border border-gray-300">
                     <canvas
                       ref="magnifierRef"
                       :width="MAGNIFIER_PIXELS * MAGNIFIER_SCALE"
@@ -73,60 +59,56 @@
                     ></canvas>
                   </div>
                   <!-- Color Info -->
-                  <div class="flex items-center gap-3 mb-2">
+                  <div class="flex items-center gap-2 mb-1">
                     <div
-                      class="w-8 h-8 rounded-md border-2 border-white/30 shadow-inner flex-shrink-0"
+                      class="w-4 h-4 border border-gray-400"
                       :style="{ backgroundColor: hoverColor.hex }"
                     ></div>
-                    <div class="font-mono font-bold text-base">{{ hoverColor.hex }}</div>
+                    <div class="font-mono font-bold">{{ hoverColor.hex }}</div>
                   </div>
-                  <div class="flex flex-col gap-1 text-xs font-mono text-gray-300">
-                    <div>Position: ({{ hoverColor.x }}, {{ hoverColor.y }})</div>
-                    <div>RGB: ({{ hoverColor.r }}, {{ hoverColor.g }}, {{ hoverColor.b }})</div>
+                  <div class="font-mono text-[10px] text-gray-600">
+                    <div>Pos: {{ hoverColor.x }}, {{ hoverColor.y }}</div>
+                    <div>RGB: {{ hoverColor.r }},{{ hoverColor.g }},{{ hoverColor.b }}</div>
                   </div>
                 </div>
               </template>
             </ImageCanvas>
-
-            <button
-              class="bg-white border border-gray-200 text-violet-500 text-2xl w-10 h-10 rounded-full cursor-pointer flex items-center justify-center flex-shrink-0 transition-all duration-300 leading-none shadow-sm hover:not-disabled:bg-gradient-to-br hover:not-disabled:from-violet-500 hover:not-disabled:to-indigo-500 hover:not-disabled:text-white hover:not-disabled:border-transparent hover:not-disabled:shadow-lg disabled:opacity-30 disabled:cursor-not-allowed"
-              @click="nextImage"
-              :disabled="currentIndex === images.length - 1"
-              aria-label="Next image"
-            >›</button>
           </div>
 
-          <!-- Image Info -->
-          <div class="text-center mt-2 flex-shrink-0">
-            <div class="text-sm text-gray-500">{{ currentIndex + 1 }} / {{ images.length }}</div>
-            <div class="text-xs text-gray-400 mt-0.5 max-w-[300px] mx-auto overflow-hidden text-ellipsis whitespace-nowrap">{{ filenames[currentIndex] }}</div>
+          <!-- Controls & Info -->
+          <div class="flex items-center justify-between mt-2 px-1">
+            <div class="flex gap-2">
+              <button class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm" @click="prevImage" :disabled="currentIndex === 0">Previous</button>
+              <button class="px-3 py-1 bg-white border border-gray-400 hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm" @click="nextImage" :disabled="currentIndex === images.length - 1">Next</button>
+            </div>
+            <div class="text-xs text-gray-600">
+              {{ currentIndex + 1 }} / {{ images.length }} - {{ filenames[currentIndex] }}
+            </div>
           </div>
 
-          <!-- Thumbnail Strip -->
-          <div v-if="images.length > 1" class="flex gap-2 mt-3 p-2 bg-gradient-to-r from-violet-50 via-fuchsia-50 to-indigo-50 rounded-xl border border-violet-100 overflow-x-auto shadow-sm flex-shrink-0">
+          <!-- Thumbnails -->
+          <div v-if="images.length > 1" class="flex gap-2 mt-2 p-2 bg-white border border-gray-300 overflow-x-auto">
             <button
               v-for="(img, index) in images"
               :key="index"
-              class="w-12 h-12 rounded-md overflow-hidden border-2 cursor-pointer p-0 bg-none flex-shrink-0 transition-colors duration-200"
-              :class="index === currentIndex ? 'border-violet-500' : 'border-transparent hover:border-gray-300'"
+              class="w-12 h-12 border-2 flex-shrink-0"
+              :class="index === currentIndex ? 'border-black' : 'border-transparent'"
               @click="currentIndex = index"
             >
-              <img :src="img" :alt="`Thumbnail ${index + 1}`" class="w-full h-full object-cover" />
+              <img :src="img" class="w-full h-full object-cover" />
             </button>
           </div>
         </div>
 
         <!-- Empty State -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center">
-          <div class="text-[4rem] mb-4">🖼️</div>
-          <p class="my-1 text-lg font-medium bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent">No images selected</p>
-          <p class="text-[0.85rem] text-gray-400 my-1">Click "Select Images" to upload multiple images</p>
+        <div v-else class="flex-1 flex flex-col items-center justify-center bg-white border border-gray-300">
+          <p class="text-gray-500">No images selected</p>
         </div>
       </div>
 
-      <!-- Right Panel: Saved Colors & Region Info -->
+      <!-- Right Panel -->
       <ClientOnly>
-        <div class="flex-[1] border-l border-violet-100 bg-gradient-to-b from-violet-50/50 to-white flex flex-col min-h-0 max-w-[380px]">
+        <div class="w-80 bg-white border-l border-gray-300 flex flex-col min-h-0">
           <div class="flex-1 overflow-y-auto">
             <SavedColorsPanel :saved-colors="savedColors" />
             <RegionInfoPanel
@@ -135,14 +117,14 @@
               @clear-region="clearRegion"
             />
           </div>
-
-          <ScriptExportButton
-            :can-export="canExport"
-            :copy-success="copySuccess"
-            @copy="copyScriptToClipboard"
-          />
-
-          <KeyboardHints />
+          <div class="p-4 border-t border-gray-200 space-y-4">
+            <ScriptExportButton
+              :can-export="canExport"
+              :copy-success="copySuccess"
+              @copy="copyScriptToClipboard"
+            />
+            <KeyboardHints />
+          </div>
         </div>
       </ClientOnly>
     </div>
@@ -156,12 +138,10 @@ import { useMagnifier, MAGNIFIER_PIXELS, MAGNIFIER_SCALE } from '~/composables/u
 import { useRegionSelection } from '~/composables/useRegionSelection'
 import { useScriptExport } from '~/composables/useScriptExport'
 
-// Refs for DOM elements
 const appRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const magnifierRef = ref<HTMLCanvasElement | null>(null)
 
-// Composables
 const {
   images,
   filenames,
@@ -208,19 +188,16 @@ const {
   copyScriptToClipboard
 } = useScriptExport(region, autoPickedColors)
 
-// Computed styles for crosshair overlay
 const crosshairStyle = computed(() => {
   const css = imageToCssCoords(cursorPos.value.x, cursorPos.value.y)
-  // +2px offset for the gradient border padding
   return {
-    left: `${css.x + 2 - 12}px`,
-    top: `${css.y + 2 - 12}px`
+    left: `${css.x - 12}px`,
+    top: `${css.y - 12}px`
   }
 })
 
-// Computed styles for tooltip positioning
-const tooltipWidth = MAGNIFIER_PIXELS * MAGNIFIER_SCALE + 32
-const tooltipHeight = MAGNIFIER_PIXELS * MAGNIFIER_SCALE + 110
+const tooltipWidth = 140
+const tooltipHeight = 160
 
 const tooltipStyle = computed(() => {
   const canvas = canvasRef.value
@@ -230,20 +207,19 @@ const tooltipStyle = computed(() => {
   const canvasWidth = canvas.clientWidth
   const canvasHeight = canvas.clientHeight
 
-  let left = cssPos.x + 2 + 20
-  let top = cssPos.y + 2 + 20
+  let left = cssPos.x + 20
+  let top = cssPos.y + 20
 
-  if (left + tooltipWidth > canvasWidth + 4) {
-    left = cssPos.x + 2 - tooltipWidth - 20
+  if (left + tooltipWidth > canvasWidth) {
+    left = cssPos.x - tooltipWidth - 20
   }
-  if (top + tooltipHeight > canvasHeight + 4) {
-    top = cssPos.y + 2 - tooltipHeight - 20
+  if (top + tooltipHeight > canvasHeight) {
+    top = cssPos.y - tooltipHeight - 20
   }
 
   return { left: `${left}px`, top: `${top}px` }
 })
 
-// Canvas mouse event handlers
 function onCanvasMouseDown(event: MouseEvent) {
   const { x, y } = cssToImageCoords(event.offsetX, event.offsetY)
   startSelection(x, y)
@@ -280,7 +256,6 @@ function onCanvasMouseEnter() {
   showTooltip.value = true
 }
 
-// Keyboard handler
 function handleKeydown(event: KeyboardEvent) {
   const canvas = canvasRef.value
 
@@ -328,7 +303,6 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-// Lifecycle hooks
 onMounted(() => {
   appRef.value?.focus()
   if (images.value.length > 0) {
@@ -336,7 +310,6 @@ onMounted(() => {
   }
 })
 
-// Watch for image changes to reset cursor
 watch(imageLoaded, (loaded) => {
   if (loaded) {
     resetCursorToCenter()
@@ -344,7 +317,6 @@ watch(imageLoaded, (loaded) => {
   }
 })
 
-// Watch for auto-picked colors to automatically save them to slots
 watch(autoPickedColors, (newColors) => {
   if (newColors.length > 0) {
     newColors.forEach((color, index) => {

@@ -1,20 +1,15 @@
 <template>
-  <div class="px-4 py-3 border-t border-violet-100 flex-shrink-0">
+  <div class="space-y-2">
     <button
       @click="$emit('copy')"
       :disabled="!canExport"
-      class="w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2"
-      :class="copySuccess
-        ? 'bg-green-500 text-white shadow-lg shadow-green-200'
-        : canExport
-          ? 'bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 text-white shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300 hover:scale-[1.02] cursor-pointer'
-          : 'bg-gray-100 text-gray-400 cursor-not-allowed'"
+      class="px-3 py-2 bg-white border border-gray-400 hover:bg-gray-50 active:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full font-bold uppercase tracking-widest text-xs"
     >
-      <span v-if="copySuccess">✓ Copied!</span>
-      <span v-else>📋 Copy Script Format</span>
+      <span v-if="copySuccess">Copied!</span>
+      <span v-else>Copy Script</span>
     </button>
-    <p v-if="!canExport" class="text-[0.65rem] text-gray-400 mt-1.5 text-center">
-      Select a region and pick colors first
+    <p v-if="!canExport" class="text-[9px] text-gray-400 text-center">
+      Select region and pick colors first
     </p>
   </div>
 </template>
