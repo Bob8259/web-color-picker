@@ -23,7 +23,7 @@
       <div class="flex-[3] flex flex-col min-h-0 min-w-0 p-6 gap-4">
         <div v-if="images.length > 0" class="flex flex-col flex-1 min-h-0 gap-4">
           <!-- Canvas Container -->
-          <div class="flex-1 relative overflow-auto flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
+          <div class="flex-1 relative overflow-hidden flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
             <ImageCanvas
               :image-loaded="imageLoaded"
               :show-crosshair="showCrosshair"
@@ -37,7 +37,7 @@
               <template #canvas>
                 <canvas
                   ref="canvasRef"
-                  class="block bg-white cursor-none shadow-lg"
+                  class="block bg-white cursor-none shadow-lg max-w-full max-h-full object-contain"
                   @mousedown="onCanvasMouseDown"
                   @mousemove="onCanvasMouseMove"
                   @mouseup="onCanvasMouseUp"
@@ -202,8 +202,8 @@ const {
 const crosshairStyle = computed(() => {
   const css = imageToCssCoords(cursorPos.value.x, cursorPos.value.y)
   return {
-    left: `${css.x - 12}px`,
-    top: `${css.y - 12}px`
+    left: `${css.x + 2 - 12}px`,
+    top: `${css.y + 2 - 12}px`
   }
 })
 
@@ -218,14 +218,14 @@ const tooltipStyle = computed(() => {
   const canvasWidth = canvas.clientWidth
   const canvasHeight = canvas.clientHeight
 
-  let left = cssPos.x + 20
-  let top = cssPos.y + 20
+  let left = cssPos.x + 2 + 20
+  let top = cssPos.y + 2 + 20
 
-  if (left + tooltipWidth > canvasWidth) {
-    left = cssPos.x - tooltipWidth - 20
+  if (left + tooltipWidth > canvasWidth + 4) {
+    left = cssPos.x + 2 - tooltipWidth - 20
   }
-  if (top + tooltipHeight > canvasHeight) {
-    top = cssPos.y - tooltipHeight - 20
+  if (top + tooltipHeight > canvasHeight + 4) {
+    top = cssPos.y + 2 - tooltipHeight - 20
   }
 
   return { left: `${left}px`, top: `${top}px` }
