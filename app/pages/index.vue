@@ -275,15 +275,36 @@ function onCanvasMouseEnter() {
 }
 
 function onCanvasContextMenu(event: MouseEvent) {
-  const { x, y } = cssToImageCoords(event.offsetX, event.offsetY)
+  const canvas = canvasRef.value
+  if (!canvas) return
+
+  const rect = canvas.getBoundingClientRect()
+  const offsetX = event.clientX - rect.left
+  const offsetY = event.clientY - rect.top
+
+  const { x, y } = cssToImageCoords(offsetX, offsetY)
   rightClickPos.value = { x, y }
   imageCanvasRef.value?.handleContextMenu(event)
 }
 
 async function copyPositionToClipboard() {
   const pos = `${rightClickPos.value.x}, ${rightClickPos.value.y}`
+
   try {
-    await navigator.clipboard.writeText(pos)
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(pos)
+    } else {
+      const textArea = document.createElement("textarea")
+      textArea.value = pos
+      textArea.style.position = "fixed"
+      textArea.style.left = "-9999px"
+      textArea.style.top = "-9999px"
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+    }
   } catch (err) {
     console.error('Failed to copy position: ', err)
   }
