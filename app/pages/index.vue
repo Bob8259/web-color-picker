@@ -157,6 +157,7 @@ const appRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const magnifierRef = ref<HTMLCanvasElement | null>(null)
 const imageCanvasRef = ref<any>(null)
+const rightClickPos = ref({ x: 0, y: 0 })
 
 const {
   images,
@@ -274,11 +275,13 @@ function onCanvasMouseEnter() {
 }
 
 function onCanvasContextMenu(event: MouseEvent) {
+  const { x, y } = cssToImageCoords(event.offsetX, event.offsetY)
+  rightClickPos.value = { x, y }
   imageCanvasRef.value?.handleContextMenu(event)
 }
 
 async function copyPositionToClipboard() {
-  const pos = `${cursorPos.value.x}, ${cursorPos.value.y}`
+  const pos = `${rightClickPos.value.x}, ${rightClickPos.value.y}`
   try {
     await navigator.clipboard.writeText(pos)
   } catch (err) {
