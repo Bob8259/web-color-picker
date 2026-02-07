@@ -7,7 +7,7 @@
   >
     <!-- Header -->
     <div class="flex items-center gap-6 w-full px-6 py-3 flex-shrink-0">
-      <h1 class="flex-1 text-2xl font-bold m-0 bg-gradient-to-r from-violet-600 via-fuchsia-50 to-indigo-600 bg-clip-text text-transparent">
+      <h1 class="flex-1 text-2xl font-bold m-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-indigo-600 bg-clip-text text-transparent">
         Color Picker
       </h1>
       <label class="px-5 py-2.5 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 text-white rounded-xl cursor-pointer text-[0.9rem] shadow-lg shadow-violet-200 transition-all duration-300 hover:from-violet-600 hover:via-fuchsia-600 hover:to-indigo-600 hover:shadow-xl hover:shadow-violet-300 hover:scale-105">
@@ -125,25 +125,27 @@
       </div>
 
       <!-- Right Panel: Saved Colors & Region Info -->
-      <div class="flex-[1] border-l border-violet-100 bg-gradient-to-b from-violet-50/50 to-white flex flex-col min-h-0 max-w-[380px]">
-        <div class="flex-1 overflow-y-auto">
-          <SavedColorsPanel :saved-colors="savedColors" />
-          <RegionInfoPanel
-            :region="region"
-            v-model:auto-pick-enabled="autoPickEnabled"
-            :auto-picked-colors="autoPickedColors"
-            @clear-region="clearRegion"
+      <ClientOnly>
+        <div class="flex-[1] border-l border-violet-100 bg-gradient-to-b from-violet-50/50 to-white flex flex-col min-h-0 max-w-[380px]">
+          <div class="flex-1 overflow-y-auto">
+            <SavedColorsPanel :saved-colors="savedColors" />
+            <RegionInfoPanel
+              :region="region"
+              v-model:auto-pick-enabled="autoPickEnabled"
+              :auto-picked-colors="autoPickedColors"
+              @clear-region="clearRegion"
+            />
+          </div>
+
+          <ScriptExportButton
+            :can-export="canExport"
+            :copy-success="copySuccess"
+            @copy="copyScriptToClipboard"
           />
+
+          <KeyboardHints />
         </div>
-
-        <ScriptExportButton
-          :can-export="canExport"
-          :copy-success="copySuccess"
-          @copy="copyScriptToClipboard"
-        />
-
-        <KeyboardHints />
-      </div>
+      </ClientOnly>
     </div>
   </div>
 </template>

@@ -50,6 +50,8 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     images.value = newImages
     filenames.value = newFilenames
     currentIndex.value = 0
+    // Explicitly load the first image since currentIndex might already be 0
+    loadCurrentImage()
   }
 
   function prevImage() {
