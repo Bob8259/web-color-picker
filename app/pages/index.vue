@@ -86,6 +86,7 @@
             <div class="flex gap-2">
               <button class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-slate-700 rounded-lg shadow-sm transition-colors" @click="prevImage" :disabled="currentIndex === 0">Previous</button>
               <button class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-slate-700 rounded-lg shadow-sm transition-colors" @click="nextImage" :disabled="currentIndex === images.length - 1">Next</button>
+              <button class="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 text-sm font-medium text-rose-600 rounded-lg shadow-sm transition-colors" @click="removeCurrentImage">Remove</button>
             </div>
             <div class="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
               <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} • {{ filenames[currentIndex] }}
@@ -159,16 +160,17 @@ const magnifierRef = ref<HTMLCanvasElement | null>(null)
 const imageCanvasRef = ref<any>(null)
 const rightClickPos = ref({ x: 0, y: 0 })
 
-const {
-  images,
-  filenames,
-  currentIndex,
-  imageLoaded,
-  onFilesSelected,
-  prevImage,
-  nextImage,
-  loadCurrentImage
-} = useImageLoader(canvasRef)
+  const {
+    images,
+    filenames,
+    currentIndex,
+    imageLoaded,
+    onFilesSelected,
+    prevImage,
+    nextImage,
+    loadCurrentImage,
+    removeCurrentImage
+  } = useImageLoader(canvasRef)
 
 const {
   savedColors,

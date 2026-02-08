@@ -9,6 +9,17 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
 
   let currentImage: HTMLImageElement | null = null
 
+  function clearCanvas() {
+    const canvas = canvasRef.value
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+    }
+    canvas.width = 0
+    canvas.height = 0
+  }
+
   function drawImageToCanvas() {
     const canvas = canvasRef.value
     if (!canvas || !currentImage) return
@@ -71,6 +82,34 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     }
   }
 
+  function removeCurrentImage() {
+    if (images.value.length === 0) return
+
+    const removeIndex = currentIndex.value
+    const removedUrl = images.value[removeIndex]
+    if (removedUrl) {
+      URL.revokeObjectURL(removedUrl)
+    }
+
+    const nextImages = images.value.slice()
+    const nextFilenames = filenames.value.slice()
+    nextImages.splice(removeIndex, 1)
+    nextFilenames.splice(removeIndex, 1)
+
+    images.value = nextImages
+    filenames.value = nextFilenames
+
+    if (images.value.length === 0) {
+      currentIndex.value = 0
+      imageLoaded.value = false
+      currentImage = null
+      clearCanvas()
+      return
+    }
+
+    currentIndex.value = Math.min(removeIndex, images.value.length - 1)
+  }
+
   // Watch for image index changes
   watch(currentIndex, () => {
     loadCurrentImage()
@@ -91,5 +130,6 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     onFilesSelected,
     prevImage,
     nextImage,
+    removeCurrentImage,
   }
 }
