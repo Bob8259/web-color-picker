@@ -35,6 +35,7 @@
               :auto-picked-colors="autoPickedColors"
               :image-to-css-coords="imageToCssCoords"
               @copy-position="copyPositionToClipboard"
+              @copy-color="copyColorToClipboard"
             >
               <template #canvas>
                 <canvas
@@ -89,7 +90,7 @@
               <button class="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 text-sm font-medium text-rose-600 rounded-lg shadow-sm transition-colors" @click="removeCurrentImage">Remove</button>
             </div>
             <div class="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-              <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} â€¢ {{ filenames[currentIndex] }}
+              <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} â€?{{ filenames[currentIndex] }}
             </div>
           </div>
 
@@ -289,26 +290,44 @@ function onCanvasContextMenu(event: MouseEvent) {
   imageCanvasRef.value?.handleContextMenu(event)
 }
 
+async function copyTextToClipboard(text: string) {
+  if (!text) return
+
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const textArea = document.createElement("textarea")
+  textArea.value = text
+  textArea.style.position = "fixed"
+  textArea.style.left = "-9999px"
+  textArea.style.top = "-9999px"
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+  document.execCommand('copy')
+  textArea.remove()
+}
+
 async function copyPositionToClipboard() {
   const pos = `${rightClickPos.value.x}, ${rightClickPos.value.y}`
 
   try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(pos)
-    } else {
-      const textArea = document.createElement("textarea")
-      textArea.value = pos
-      textArea.style.position = "fixed"
-      textArea.style.left = "-9999px"
-      textArea.style.top = "-9999px"
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-      document.execCommand('copy')
-      textArea.remove()
-    }
+    await copyTextToClipboard(pos)
   } catch (err) {
     console.error('Failed to copy position: ', err)
+  }
+}
+
+async function copyColorToClipboard() {
+  const color = getPixelColor(rightClickPos.value.x, rightClickPos.value.y)
+  const hex = color?.bgrHex ?? ''
+
+  try {
+    await copyTextToClipboard(hex)
+  } catch (err) {
+    console.error('Failed to copy color: ', err)
   }
 }
 

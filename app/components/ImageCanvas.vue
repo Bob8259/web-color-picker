@@ -2,7 +2,7 @@
   <div class="flex-1 flex items-center justify-center min-h-0 min-w-0 relative">
     <div class="relative inline-block max-w-full max-h-full" ref="containerRef">
       <div class="p-[2px] bg-gradient-to-br from-violet-400 via-fuchsia-300 to-indigo-400 shadow-lg shadow-violet-100">
-        <!-- Canvas slot â€” rendered by parent so refs stay in parent scope -->
+        <!-- Canvas slot â€?rendered by parent so refs stay in parent scope -->
         <slot name="canvas" />
       </div>
 
@@ -41,7 +41,7 @@
         ></div>
       </div>
 
-      <!-- Tooltip slot â€” rendered by parent so magnifier ref stays in parent scope -->
+      <!-- Tooltip slot â€?rendered by parent so magnifier ref stays in parent scope -->
       <slot name="tooltip" />
 
       <!-- Context Menu -->
@@ -60,6 +60,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
           </svg>
           Copy Position
+        </button>
+        <button
+          class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center gap-2"
+          @mousedown.stop="onCopyColor"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h4l2-2h4l2 2h4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6M9 12h6" />
+          </svg>
+          Copy Color
         </button>
       </div>
     </div>
@@ -82,6 +92,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'copy-position'): void
+  (e: 'copy-color'): void
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
@@ -106,6 +117,11 @@ const handleContextMenu = (e: MouseEvent) => {
 
 const onCopyPosition = () => {
   emit('copy-position')
+  closeContextMenu()
+}
+
+const onCopyColor = () => {
+  emit('copy-color')
   closeContextMenu()
 }
 
