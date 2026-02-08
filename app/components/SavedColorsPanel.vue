@@ -20,6 +20,7 @@
         
         <div class="min-w-0 flex-1">
           <div v-if="color" class="text-xs font-mono font-bold truncate text-slate-700">{{ color.bgrHex }}</div>
+          <div v-if="color" class="text-[10px] text-black font-mono truncate">({{ color.x }}, {{ color.y }})</div>
           <div v-else class="text-xs text-slate-400 italic">Empty</div>
         </div>
 
