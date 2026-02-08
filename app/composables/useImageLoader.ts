@@ -57,14 +57,12 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     }
 
     const hadImages = images.value.length > 0
+    const newStartIndex = images.value.length
     images.value = images.value.concat(newImages)
     filenames.value = filenames.value.concat(newFilenames)
 
-    if (!hadImages) {
-      currentIndex.value = 0
-      // Explicitly load the first image since currentIndex might already be 0
-      loadCurrentImage()
-    }
+    currentIndex.value = hadImages ? newStartIndex : 0
+    loadCurrentImage()
 
     // Allow re-selecting the same files in a subsequent selection
     input.value = ''
