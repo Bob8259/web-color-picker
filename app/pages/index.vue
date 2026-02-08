@@ -134,13 +134,30 @@
               @re-auto-select="autoPickColors"
             />
           </div>
-          <div class="p-4 border-t border-gray-200 space-y-4">
-            <ScriptExportButton
-              :can-export="canExport"
-              :copy-success="copySuccess"
-              @copy="copyScriptToClipboard"
-            />
-            <KeyboardHints />
+          <div class="p-4 border-t border-gray-200 space-y-4">            <div class="flex gap-2">
+              <div class="flex-1">
+                <ScriptExportButton
+                  :can-export="canExport"
+                  :copy-success="copySuccess"
+                  @copy="copyScriptToClipboard"
+                />
+              </div>
+              <button
+                class="flex-1 px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-bold uppercase tracking-widest text-xs rounded-lg shadow-sm transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2"
+                :disabled="!canExport"
+                @click="copyColorsToClipboard"
+              >
+                <svg v-if="copyColorsSuccess" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h4l2-2h4l2 2h4v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 16h6M9 12h6" />
+                </svg>
+                <span v-if="copyColorsSuccess">Copied!</span>
+                <span v-else>Copy Colors</span>
+              </button>
+            </div><KeyboardHints />
           </div>
         </div>
       </ClientOnly>
@@ -205,8 +222,10 @@ const {
 
 const {
   copySuccess,
+  copyColorsSuccess,
   canExport,
-  copyScriptToClipboard
+  copyScriptToClipboard,
+  copyColorsToClipboard
 } = useScriptExport(region, autoPickedColors)
 
 const crosshairStyle = computed(() => {
