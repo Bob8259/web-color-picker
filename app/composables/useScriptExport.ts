@@ -4,17 +4,21 @@ import type { ColorInfo, Region } from '~/types'
 
 export function useScriptExport(
   region: Ref<Region | null>,
-  autoPickedColors: Ref<ColorInfo[]>
+  savedColors: Ref<(ColorInfo | null)[]>
 ) {
   const copySuccess = ref(false)
   const copyColorsSuccess = ref(false)
 
+  const selectedColors = computed(() => {
+    return savedColors.value.filter((color): color is ColorInfo => color !== null)
+  })
+
   // Generate the script-format text
   function generateScriptText(): string {
-    if (!region.value || autoPickedColors.value.length === 0) return ''
+    if (!region.value || selectedColors.value.length === 0) return ''
 
     const { x1, y1, x2, y2 } = region.value
-    const colors = autoPickedColors.value
+    const colors = selectedColors.value
     const first = colors[0]!
 
     // First color hex (without #)
@@ -43,9 +47,9 @@ export function useScriptExport(
   }
 
   function generateColorsText(): string {
-    if (autoPickedColors.value.length === 0) return ''
+    if (selectedColors.value.length === 0) return ''
 
-    const colors = autoPickedColors.value
+    const colors = selectedColors.value
     const first = colors[0]!
     const firstHex = first.bgrHex.replace('#', '')
     const rest = colors.slice(1).map(c => {
@@ -106,7 +110,7 @@ export function useScriptExport(
   }
 
   const canExport = computed(() => {
-    return region.value !== null && autoPickedColors.value.length > 0
+    return region.value !== null && selectedColors.value.length > 0
   })
 
   return {

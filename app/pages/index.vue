@@ -226,7 +226,7 @@ const {
   canExport,
   copyScriptToClipboard,
   copyColorsToClipboard
-} = useScriptExport(region, autoPickedColors)
+} = useScriptExport(region, savedColors)
 
 const crosshairStyle = computed(() => {
   const css = imageToCssCoords(cursorPos.value.x, cursorPos.value.y)
