@@ -19,7 +19,9 @@ export function useRegionSelection(
     selectionStart.value = { x: imgX, y: imgY }
     selectionCurrent.value = { x: imgX, y: imgY }
     region.value = null
-    autoPickedColors.value = []
+    if (autoPickEnabled.value) {
+      autoPickedColors.value = []
+    }
   }
 
   // Update selection during drag (image coordinates)
