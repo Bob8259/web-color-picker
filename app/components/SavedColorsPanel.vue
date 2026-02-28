@@ -13,13 +13,22 @@
       >
         <div
           v-if="color"
-          class="w-8 h-8 border border-slate-200 rounded-md flex-shrink-0 shadow-sm"
+          class="w-8 h-8 border border-slate-200 rounded-md flex-shrink-0 shadow-sm cursor-pointer hover:scale-110 transition-transform"
           :style="{ backgroundColor: color.hex }"
+          @click="copyToClipboard(color.hex)"
+          title="Copy HEX"
         ></div>
         <div v-else class="w-8 h-8 border border-dashed border-slate-200 rounded-md flex-shrink-0 bg-slate-50"></div>
         
         <div class="min-w-0 flex-1">
-          <div v-if="color" class="text-xs font-mono font-bold truncate text-slate-700">{{ color.bgrHex }}</div>
+          <div
+            v-if="color"
+            class="text-xs font-mono font-bold truncate text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors"
+            @click="copyToClipboard(color.bgrHex)"
+            title="Copy BGR HEX"
+          >
+            {{ color.bgrHex }}
+          </div>
           <div v-if="color" class="text-[10px] text-black font-mono truncate">({{ color.x }}, {{ color.y }})</div>
           <div v-else class="text-xs text-slate-400 italic">Empty</div>
         </div>
@@ -41,4 +50,24 @@ import type { ColorInfo } from '~/types'
 defineProps<{
   savedColors: (ColorInfo | null)[]
 }>()
+
+async function copyToClipboard(text: string) {
+  if (!text) return
+
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch (err) {
+    // Fallback
+    const textArea = document.createElement("textarea")
+    textArea.value = text
+    textArea.style.position = "fixed"
+    textArea.style.left = "-9999px"
+    textArea.style.top = "-9999px"
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    document.execCommand('copy')
+    textArea.remove()
+  }
+}
 </script>

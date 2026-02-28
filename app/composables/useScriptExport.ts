@@ -109,14 +109,19 @@ export function useScriptExport(
     await copyTextToClipboard(text, () => setCopySuccess(copyColorsSuccess))
   }
 
-  const canExport = computed(() => {
+  const canCopyScript = computed(() => {
     return region.value !== null && selectedColors.value.length > 0
+  })
+
+  const canCopyColors = computed(() => {
+    return selectedColors.value.length > 0
   })
 
   return {
     copySuccess,
     copyColorsSuccess,
-    canExport,
+    canCopyScript,
+    canCopyColors,
     generateScriptText,
     generateColorsText,
     copyScriptToClipboard,

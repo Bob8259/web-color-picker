@@ -90,7 +90,7 @@
               <button class="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 text-sm font-medium text-rose-600 rounded-lg shadow-sm transition-colors" @click="removeCurrentImage">Remove</button>
             </div>
             <div class="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-              <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} â€?{{ filenames[currentIndex] }}
+              <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} ï¿½?{{ filenames[currentIndex] }}
             </div>
           </div>
 
@@ -137,14 +137,14 @@
           <div class="p-4 border-t border-gray-200 space-y-4">            <div class="flex gap-2">
               <div class="flex-1">
                 <ScriptExportButton
-                  :can-export="canExport"
+                  :can-export="canCopyScript"
                   :copy-success="copySuccess"
                   @copy="copyScriptToClipboard"
                 />
               </div>
               <button
                 class="flex-1 px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-bold uppercase tracking-widest text-xs rounded-lg shadow-sm transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2"
-                :disabled="!canExport"
+                :disabled="!canCopyColors"
                 @click="copyColorsToClipboard"
               >
                 <svg v-if="copyColorsSuccess" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -223,7 +223,8 @@ const {
 const {
   copySuccess,
   copyColorsSuccess,
-  canExport,
+  canCopyScript,
+  canCopyColors,
   copyScriptToClipboard,
   copyColorsToClipboard
 } = useScriptExport(region, savedColors)
@@ -250,12 +251,25 @@ const tooltipStyle = computed(() => {
   let left = cssPos.x + 2 + 20
   let top = cssPos.y + 2 + 20
 
+  // Horizontal flip
   if (left + tooltipWidth > canvasWidth + 4) {
     left = cssPos.x + 2 - tooltipWidth - 20
   }
+  // Horizontal clamp
+  left = Math.max(0, Math.min(left, canvasWidth - tooltipWidth))
+
+  // Vertical flip
   if (top + tooltipHeight > canvasHeight + 4) {
-    top = cssPos.y + 2 - tooltipHeight - 20
+    const topSpace = cssPos.y
+    const bottomSpace = canvasHeight - cssPos.y
+    
+    // Only flip if there is enough space above, or if there is more space above than below
+    if (topSpace > tooltipHeight + 20 || topSpace > bottomSpace) {
+      top = cssPos.y + 2 - tooltipHeight - 20
+    }
   }
+  // Vertical clamp
+  top = Math.max(0, Math.min(top, canvasHeight - tooltipHeight))
 
   return { left: `${left}px`, top: `${top}px` }
 })

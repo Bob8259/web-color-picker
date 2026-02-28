@@ -15,7 +15,7 @@
       <span v-else>Copy Script</span>
     </button>
     <p v-if="!canExport" class="text-[10px] text-slate-400 text-center italic">
-      Select region and pick colors first
+      Select region and pick colors to export script
     </p>
   </div>
 </template>
