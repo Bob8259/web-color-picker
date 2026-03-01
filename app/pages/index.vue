@@ -285,7 +285,12 @@ function onCanvasMouseMove(event: MouseEvent) {
 
   const { x, y } = cssToImageCoords(event.offsetX, event.offsetY)
   mouseCanvasPos.value = { x: event.offsetX, y: event.offsetY }
-  cursorPos.value = { x, y }
+
+  // Don't update cursor position when context menu is open
+  if (!imageCanvasRef.value?.contextMenu?.show) {
+    cursorPos.value = { x, y }
+  }
+
   hoverColor.value = getPixelColor(x, y)
   showTooltip.value = true
   showCrosshair.value = true
@@ -344,7 +349,7 @@ async function copyTextToClipboard(text: string) {
 }
 
 async function copyPositionToClipboard() {
-  const pos = `${rightClickPos.value.x}, ${rightClickPos.value.y}`
+  const pos = `${cursorPos.value.x}, ${cursorPos.value.y}`
 
   try {
     await copyTextToClipboard(pos)
@@ -354,7 +359,7 @@ async function copyPositionToClipboard() {
 }
 
 async function copyColorToClipboard() {
-  const color = getPixelColor(rightClickPos.value.x, rightClickPos.value.y)
+  const color = getPixelColor(cursorPos.value.x, cursorPos.value.y)
   const hex = color?.bgrHex ?? ''
 
   try {

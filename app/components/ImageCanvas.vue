@@ -2,7 +2,7 @@
   <div class="flex-1 flex items-center justify-center min-h-0 min-w-0 relative">
     <div class="relative inline-block max-w-full max-h-full" ref="containerRef">
       <div class="p-[2px] bg-gradient-to-br from-violet-400 via-fuchsia-300 to-indigo-400 shadow-lg shadow-violet-100">
-        <!-- Canvas slot â€?rendered by parent so refs stay in parent scope -->
+        <!-- Canvas slot ï¿½?rendered by parent so refs stay in parent scope -->
         <slot name="canvas" />
       </div>
 
@@ -41,7 +41,7 @@
         ></div>
       </div>
 
-      <!-- Tooltip slot â€?rendered by parent so magnifier ref stays in parent scope -->
+      <!-- Tooltip slot ï¿½?rendered by parent so magnifier ref stays in parent scope -->
       <slot name="tooltip" />
 
       <!-- Context Menu -->
@@ -142,7 +142,8 @@ onUnmounted(() => {
 })
 
 defineExpose({
-  handleContextMenu
+  handleContextMenu,
+  contextMenu
 })
 
 // Region preview style (while dragging)
