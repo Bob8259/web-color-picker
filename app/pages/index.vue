@@ -237,8 +237,8 @@ const crosshairStyle = computed(() => {
   }
 })
 
-const tooltipWidth = 140
-const tooltipHeight = 160
+const tooltipWidth = 180
+const tooltipHeight = 240
 
 const tooltipStyle = computed(() => {
   const canvas = canvasRef.value
@@ -251,24 +251,24 @@ const tooltipStyle = computed(() => {
   let left = cssPos.x + 2 + 20
   let top = cssPos.y + 2 + 20
 
-  // Horizontal flip
-  if (left + tooltipWidth > canvasWidth + 4) {
+  // Horizontal flip: if it would go off the right edge, put it on the left
+  if (left + tooltipWidth > canvasWidth + 2) {
     left = cssPos.x + 2 - tooltipWidth - 20
   }
-  // Horizontal clamp
+  // Horizontal clamp: ensure it stays within horizontal bounds
   left = Math.max(0, Math.min(left, canvasWidth - tooltipWidth))
 
-  // Vertical flip
-  if (top + tooltipHeight > canvasHeight + 4) {
+  // Vertical flip: if it would go off the bottom edge, try to flip it above the cursor
+  if (top + tooltipHeight > canvasHeight + 2) {
     const topSpace = cssPos.y
     const bottomSpace = canvasHeight - cssPos.y
     
-    // Only flip if there is enough space above, or if there is more space above than below
+    // Flip if there is more space above, or if there's enough space above to fit the tooltip
     if (topSpace > tooltipHeight + 20 || topSpace > bottomSpace) {
       top = cssPos.y + 2 - tooltipHeight - 20
     }
   }
-  // Vertical clamp
+  // Vertical clamp: ensure it stays within vertical bounds
   top = Math.max(0, Math.min(top, canvasHeight - tooltipHeight))
 
   return { left: `${left}px`, top: `${top}px` }
