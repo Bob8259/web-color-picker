@@ -8,6 +8,7 @@ export function useScriptExport(
 ) {
   const copySuccess = ref(false)
   const copyColorsSuccess = ref(false)
+  const copyAreaPositionSuccess = ref(false)
 
   const selectedColors = computed(() => {
     return savedColors.value.filter((color): color is ColorInfo => color !== null)
@@ -117,14 +118,28 @@ export function useScriptExport(
     return selectedColors.value.length > 0
   })
 
+  const canCopyAreaPosition = computed(() => {
+    return region.value !== null
+  })
+
+  async function copyAreaPositionToClipboard() {
+    if (!region.value) return
+    const { x1, y1, x2, y2 } = region.value
+    const text = `${x1}, ${y1}, ${x2}, ${y2}`
+    await copyTextToClipboard(text, () => setCopySuccess(copyAreaPositionSuccess))
+  }
+
   return {
     copySuccess,
     copyColorsSuccess,
+    copyAreaPositionSuccess,
     canCopyScript,
     canCopyColors,
+    canCopyAreaPosition,
     generateScriptText,
     generateColorsText,
     copyScriptToClipboard,
     copyColorsToClipboard,
+    copyAreaPositionToClipboard,
   }
 }

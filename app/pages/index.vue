@@ -134,16 +134,15 @@
               @re-auto-select="autoPickColors"
             />
           </div>
-          <div class="p-4 border-t border-gray-200 space-y-4">            <div class="flex gap-2">
-              <div class="flex-1">
-                <ScriptExportButton
-                  :can-export="canCopyScript"
-                  :copy-success="copySuccess"
-                  @copy="copyScriptToClipboard"
-                />
-              </div>
+          <div class="p-4 border-t border-gray-200 space-y-4">
+            <div class="flex flex-col gap-2">
+              <ScriptExportButton
+                :can-export="canCopyScript"
+                :copy-success="copySuccess"
+                @copy="copyScriptToClipboard"
+              />
               <button
-                class="flex-1 px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-bold uppercase tracking-widest text-xs rounded-lg shadow-sm transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2"
+                class="w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-bold uppercase tracking-widest text-xs rounded-lg shadow-sm transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2"
                 :disabled="!canCopyColors"
                 @click="copyColorsToClipboard"
               >
@@ -157,7 +156,23 @@
                 <span v-if="copyColorsSuccess">Copied!</span>
                 <span v-else>Copy Colors</span>
               </button>
-            </div><KeyboardHints />
+              <button
+                class="w-full px-4 py-3 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-bold uppercase tracking-widest text-xs rounded-lg shadow-sm transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2"
+                :disabled="!canCopyAreaPosition"
+                @click="copyAreaPositionToClipboard"
+              >
+                <svg v-if="copyAreaPositionSuccess" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span v-if="copyAreaPositionSuccess">Copied!</span>
+                <span v-else>Copy Area</span>
+              </button>
+            </div>
+            <KeyboardHints />
           </div>
         </div>
       </ClientOnly>
@@ -223,10 +238,13 @@ const {
 const {
   copySuccess,
   copyColorsSuccess,
+  copyAreaPositionSuccess,
   canCopyScript,
   canCopyColors,
+  canCopyAreaPosition,
   copyScriptToClipboard,
-  copyColorsToClipboard
+  copyColorsToClipboard,
+  copyAreaPositionToClipboard
 } = useScriptExport(region, savedColors)
 
 const crosshairStyle = computed(() => {
