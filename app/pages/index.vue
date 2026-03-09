@@ -412,6 +412,9 @@ function handleKeydown(event: KeyboardEvent) {
       event.preventDefault()
       const slotIndex = keyNum === 0 ? 9 : keyNum - 1
       saveColorToSlot(slotIndex)
+      
+      const color = getPixelColor(cursorPos.value.x, cursorPos.value.y)
+      imageCanvasRef.value?.triggerAnimation(cursorPos.value.x, cursorPos.value.y, color?.hex)
     }
   }
 }
@@ -435,6 +438,9 @@ watch(autoPickedColors, (newColors) => {
     newColors.forEach((color, index) => {
       if (index < 10) {
         saveSpecificColorToSlot(color, index)
+        setTimeout(() => {
+          imageCanvasRef.value?.triggerAnimation(color.x, color.y, color.hex)
+        }, index * 50)
       }
     })
   }

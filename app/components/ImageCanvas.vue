@@ -72,6 +72,16 @@
           Copy Color
         </button>
       </div>
+      <!-- Pick Animations -->
+      <div
+        v-for="anim in pickAnimations"
+        :key="anim.id"
+        class="absolute pointer-events-none z-50 flex items-center justify-center"
+        :style="{ left: `${anim.x}px`, top: `${anim.y}px` }"
+      >
+        <div class="pop-dot" :style="{ backgroundColor: anim.color }"></div>
+        <div class="pop-ring" :style="{ borderColor: anim.color }"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -141,9 +151,23 @@ onUnmounted(() => {
   window.removeEventListener('scroll', closeContextMenu, true)
 })
 
+const pickAnimations = ref<{id: number; x: number; y: number; color?: string}[]>([])
+let animationIdCounter = 0
+
+const triggerAnimation = (imgX: number, imgY: number, color?: string) => {
+  const css = props.imageToCssCoords(imgX, imgY)
+  const id = animationIdCounter++
+  pickAnimations.value.push({ id, x: css.x + 2, y: css.y + 2, color: color || '#8b5cf6' })
+  
+  setTimeout(() => {
+    pickAnimations.value = pickAnimations.value.filter(a => a.id !== id)
+  }, 800)
+}
+
 defineExpose({
   handleContextMenu,
-  contextMenu
+  contextMenu,
+  triggerAnimation
 })
 
 // Region preview style (while dragging)
@@ -196,3 +220,55 @@ const autoPickDots = computed(() => {
   })
 })
 </script>
+
+<style scoped>
+.pop-dot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.8), inset 0 0 4px rgba(0,0,0,0.4);
+  animation: pop-dot-anim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.pop-ring {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 4px solid;
+  box-shadow: inset 0 0 6px rgba(255,255,255,1), 0 0 6px rgba(0,0,0,0.8);
+  animation: pop-ring-anim 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+.pop-ring::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  animation: pop-ring-inner 0.8s ease-out forwards;
+}
+
+@keyframes pop-dot-anim {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  40% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+}
+
+@keyframes pop-ring-anim {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 6px; }
+  100% { transform: translate(-50%, -50%) scale(8); opacity: 0; border-width: 1px; }
+}
+
+@keyframes pop-ring-inner {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(5); opacity: 0; }
+}
+</style>
