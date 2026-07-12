@@ -4,6 +4,10 @@
     @keydown="handleKeydown"
     tabindex="0"
     ref="appRef"
+    @dragenter="onDragEnter"
+    @dragover="onDragOver"
+    @dragleave="onDragLeave"
+    @drop="onDrop"
   >
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-sm z-10">
@@ -20,7 +24,7 @@
     <!-- Main Content -->
     <div class="flex flex-1 min-h-0 w-full">
       <!-- Left Panel: Image Viewer -->
-      <div class="flex-[3] flex flex-col min-h-0 min-w-0 p-6 gap-4">
+      <div class="flex-[3] flex flex-col min-h-0 min-w-0 p-6 gap-4 relative">
         <div v-if="images.length > 0" class="flex flex-col flex-1 min-h-0 gap-4">
           <!-- Canvas Container -->
           <div class="flex-1 relative overflow-hidden flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
@@ -109,16 +113,40 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center bg-white border border-slate-200 rounded-xl shadow-sm border-dashed border-2">
+        <div
+          v-else
+          class="flex-1 flex flex-col items-center justify-center bg-white rounded-xl shadow-sm border-dashed border-2 transition-colors duration-200"
+          :class="isDraggingOver
+            ? 'border-indigo-400 bg-indigo-50/60'
+            : 'border-slate-200'"
+        >
           <div class="text-center space-y-3">
-            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div
+              class="w-16 h-16 rounded-full flex items-center justify-center mx-auto transition-colors duration-200"
+              :class="isDraggingOver ? 'bg-indigo-100' : 'bg-slate-50'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 transition-colors duration-200" :class="isDraggingOver ? 'text-indigo-500' : 'text-slate-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <p class="text-slate-500 font-medium">No images selected</p>
-            <p class="text-xs text-slate-400">Click "Select Images" to get started</p>
+            <p class="font-medium transition-colors duration-200" :class="isDraggingOver ? 'text-indigo-600' : 'text-slate-500'">
+              {{ isDraggingOver ? 'Drop images to add' : 'No images selected' }}
+            </p>
+            <p class="text-xs text-slate-400">Drag & drop images here, or click "Select Images"</p>
           </div>
+        </div>
+
+        <!-- Drop overlay when images are already loaded -->
+        <div
+          v-if="isDraggingOver && images.length > 0"
+          class="absolute inset-6 z-30 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50/80 backdrop-blur-sm pointer-events-none"
+        >
+          <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          </div>
+          <p class="text-indigo-600 font-medium">Drop images to add</p>
         </div>
       </div>
 
@@ -192,18 +220,21 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const magnifierRef = ref<HTMLCanvasElement | null>(null)
 const imageCanvasRef = ref<any>(null)
 const rightClickPos = ref({ x: 0, y: 0 })
+const isDraggingOver = ref(false)
+let dragDepth = 0
 
-  const {
-    images,
-    filenames,
-    currentIndex,
-    imageLoaded,
-    onFilesSelected,
-    prevImage,
-    nextImage,
-    loadCurrentImage,
-    removeCurrentImage
-  } = useImageLoader(canvasRef)
+const {
+  images,
+  filenames,
+  currentIndex,
+  imageLoaded,
+  addImageFiles,
+  onFilesSelected,
+  prevImage,
+  nextImage,
+  loadCurrentImage,
+  removeCurrentImage
+} = useImageLoader(canvasRef)
 
 const {
   savedColors,
@@ -291,6 +322,45 @@ const tooltipStyle = computed(() => {
 
   return { left: `${left}px`, top: `${top}px` }
 })
+
+function hasFileDrag(event: DragEvent): boolean {
+  return Array.from(event.dataTransfer?.types ?? []).includes('Files')
+}
+
+function onDragEnter(event: DragEvent) {
+  if (!hasFileDrag(event)) return
+  event.preventDefault()
+  dragDepth++
+  isDraggingOver.value = true
+}
+
+function onDragOver(event: DragEvent) {
+  if (!hasFileDrag(event)) return
+  event.preventDefault()
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'copy'
+  }
+  isDraggingOver.value = true
+}
+
+function onDragLeave(event: DragEvent) {
+  if (!hasFileDrag(event)) return
+  event.preventDefault()
+  dragDepth = Math.max(0, dragDepth - 1)
+  if (dragDepth === 0) {
+    isDraggingOver.value = false
+  }
+}
+
+function onDrop(event: DragEvent) {
+  event.preventDefault()
+  dragDepth = 0
+  isDraggingOver.value = false
+
+  const files = event.dataTransfer?.files
+  if (!files || files.length === 0) return
+  addImageFiles(files)
+}
 
 function onCanvasMouseDown(event: MouseEvent) {
   const { x, y } = cssToImageCoords(event.offsetX, event.offsetY)

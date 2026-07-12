@@ -44,14 +44,14 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     img.src = images.value[currentIndex.value] ?? ''
   }
 
-  function onFilesSelected(event: Event) {
-    const input = event.target as HTMLInputElement
-    if (!input.files || input.files.length === 0) return
+  function addImageFiles(files: FileList | File[]) {
+    const fileArray = Array.from(files).filter((file) => file.type.startsWith('image/'))
+    if (fileArray.length === 0) return
 
     const newImages: string[] = []
     const newFilenames: string[] = []
 
-    for (const file of Array.from(input.files)) {
+    for (const file of fileArray) {
       newImages.push(URL.createObjectURL(file))
       newFilenames.push(file.name)
     }
@@ -63,6 +63,13 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
 
     currentIndex.value = hadImages ? newStartIndex : 0
     loadCurrentImage()
+  }
+
+  function onFilesSelected(event: Event) {
+    const input = event.target as HTMLInputElement
+    if (!input.files || input.files.length === 0) return
+
+    addImageFiles(input.files)
 
     // Allow re-selecting the same files in a subsequent selection
     input.value = ''
@@ -125,6 +132,7 @@ export function useImageLoader(canvasRef: Ref<HTMLCanvasElement | null>) {
     imageLoaded,
     drawImageToCanvas,
     loadCurrentImage,
+    addImageFiles,
     onFilesSelected,
     prevImage,
     nextImage,
