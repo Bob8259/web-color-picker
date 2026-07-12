@@ -27,7 +27,14 @@
       <div class="flex-[3] flex flex-col min-h-0 min-w-0 p-6 gap-4 relative">
         <div v-if="images.length > 0" class="flex flex-col flex-1 min-h-0 gap-4">
           <!-- Canvas Container -->
-          <div class="flex-1 relative overflow-hidden flex items-center justify-center bg-slate-100 border border-slate-200 rounded-xl shadow-inner">
+          <div
+            ref="viewportRef"
+            class="flex-1 relative overflow-auto bg-slate-100 border border-slate-200 rounded-xl shadow-inner"
+          >
+            <div
+              class="min-w-full min-h-full flex items-center justify-center"
+              :style="viewportContentStyle"
+            >
             <ImageCanvas
               ref="imageCanvasRef"
               :image-loaded="imageLoaded"
@@ -44,7 +51,8 @@
               <template #canvas>
                 <canvas
                   ref="canvasRef"
-                  class="block bg-white cursor-none shadow-lg max-w-full max-h-full object-contain"
+                  class="block bg-white cursor-none shadow-lg"
+                  :style="canvasDisplayStyle"
                   @mousedown="onCanvasMouseDown"
                   @mousemove="onCanvasMouseMove"
                   @mouseup="onCanvasMouseUp"
@@ -84,14 +92,49 @@
                 </div>
               </template>
             </ImageCanvas>
+            </div>
           </div>
 
           <!-- Controls & Info -->
-          <div class="flex items-center justify-between px-1">
-            <div class="flex gap-2">
+          <div class="flex items-center justify-between px-1 gap-3 flex-wrap">
+            <div class="flex gap-2 items-center flex-wrap">
               <button class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-slate-700 rounded-lg shadow-sm transition-colors" @click="prevImage" :disabled="currentIndex === 0">Previous</button>
               <button class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium text-slate-700 rounded-lg shadow-sm transition-colors" @click="nextImage" :disabled="currentIndex === images.length - 1">Next</button>
               <button class="px-3 py-1.5 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 active:bg-rose-100 text-sm font-medium text-rose-600 rounded-lg shadow-sm transition-colors" @click="removeCurrentImage">Remove</button>
+
+              <!-- Zoom controls -->
+              <div class="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg shadow-sm px-2 py-1">
+                <button
+                  class="w-7 h-7 flex items-center justify-center rounded-md text-slate-600 hover:bg-slate-50 hover:text-indigo-600 active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  :disabled="zoomLevel <= ZOOM_MIN"
+                  title="Zoom out"
+                  @click="zoomOut"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                  </svg>
+                </button>
+                <input
+                  type="range"
+                  class="w-28 h-1.5 accent-indigo-500 cursor-pointer"
+                  :min="ZOOM_MIN"
+                  :max="ZOOM_MAX"
+                  :step="ZOOM_STEP"
+                  :value="zoomLevel"
+                  @input="onZoomSliderInput"
+                />
+                <button
+                  class="w-7 h-7 flex items-center justify-center rounded-md text-slate-600 hover:bg-slate-50 hover:text-indigo-600 active:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  :disabled="zoomLevel >= ZOOM_MAX"
+                  title="Zoom in"
+                  @click="zoomIn"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
+                <span class="text-xs font-mono font-medium text-slate-600 min-w-[3rem] text-right tabular-nums">{{ zoomPercentLabel }}</span>
+              </div>
             </div>
             <div class="text-xs font-medium text-slate-500 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
               <span class="text-slate-900">{{ currentIndex + 1 }}</span> / {{ images.length }} �?{{ filenames[currentIndex] }}
@@ -219,9 +262,18 @@ const appRef = ref<HTMLElement | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const magnifierRef = ref<HTMLCanvasElement | null>(null)
 const imageCanvasRef = ref<any>(null)
+const viewportRef = ref<HTMLElement | null>(null)
 const rightClickPos = ref({ x: 0, y: 0 })
 const isDraggingOver = ref(false)
 let dragDepth = 0
+
+const ZOOM_MIN = 0.25
+const ZOOM_MAX = 4
+const ZOOM_STEP = 0.25
+const ZOOM_DEFAULT = 1
+const zoomLevel = ref(ZOOM_DEFAULT)
+const viewportSize = ref({ width: 0, height: 0 })
+let viewportObserver: ResizeObserver | null = null
 
 const {
   images,
@@ -277,6 +329,88 @@ const {
   copyColorsToClipboard,
   copyAreaPositionToClipboard
 } = useScriptExport(region, savedColors)
+
+function clampZoom(value: number): number {
+  const stepped = Math.round(value / ZOOM_STEP) * ZOOM_STEP
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Number(stepped.toFixed(2))))
+}
+
+function setZoom(value: number) {
+  zoomLevel.value = clampZoom(value)
+}
+
+function zoomIn() {
+  setZoom(zoomLevel.value + ZOOM_STEP)
+}
+
+function zoomOut() {
+  setZoom(zoomLevel.value - ZOOM_STEP)
+}
+
+function onZoomSliderInput(event: Event) {
+  const target = event.target as HTMLInputElement
+  setZoom(Number(target.value))
+}
+
+function resetZoom() {
+  zoomLevel.value = ZOOM_DEFAULT
+  nextTick(() => {
+    const viewport = viewportRef.value
+    if (viewport) {
+      viewport.scrollLeft = 0
+      viewport.scrollTop = 0
+    }
+  })
+}
+
+const zoomPercentLabel = computed(() => `${Math.round(zoomLevel.value * 100)}%`)
+
+const canvasPixelSize = ref({ width: 0, height: 0 })
+
+const canvasDisplayStyle = computed(() => {
+  const { width, height } = canvasPixelSize.value
+  if (!imageLoaded.value || width === 0 || height === 0) {
+    return {}
+  }
+
+  const padding = 16
+  const availableWidth = Math.max(viewportSize.value.width - padding, 1)
+  const availableHeight = Math.max(viewportSize.value.height - padding, 1)
+  const fitScale = Math.min(1, availableWidth / width, availableHeight / height)
+  const displayScale = fitScale * zoomLevel.value
+
+  return {
+    width: `${Math.max(1, Math.round(width * displayScale))}px`,
+    height: `${Math.max(1, Math.round(height * displayScale))}px`,
+    maxWidth: 'none',
+    maxHeight: 'none',
+  }
+})
+
+const viewportContentStyle = computed(() => {
+  const { width, height } = canvasPixelSize.value
+  if (!imageLoaded.value || width === 0 || height === 0) {
+    return {
+      width: '100%',
+      height: '100%',
+    }
+  }
+
+  const padding = 16
+  const availableWidth = Math.max(viewportSize.value.width - padding, 1)
+  const availableHeight = Math.max(viewportSize.value.height - padding, 1)
+  const fitScale = Math.min(1, availableWidth / width, availableHeight / height)
+  const displayScale = fitScale * zoomLevel.value
+  const contentWidth = Math.max(viewportSize.value.width, Math.round(width * displayScale) + padding)
+  const contentHeight = Math.max(viewportSize.value.height, Math.round(height * displayScale) + padding)
+
+  return {
+    width: `${contentWidth}px`,
+    height: `${contentHeight}px`,
+    minWidth: '100%',
+    minHeight: '100%',
+  }
+})
 
 const crosshairStyle = computed(() => {
   const css = imageToCssCoords(cursorPos.value.x, cursorPos.value.y)
@@ -507,17 +641,61 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
+function attachViewportObserver() {
+  const viewport = viewportRef.value
+  if (!viewport || typeof ResizeObserver === 'undefined') return
+
+  viewportObserver?.disconnect()
+  viewportObserver = new ResizeObserver((entries) => {
+    const entry = entries[0]
+    if (!entry) return
+    viewportSize.value = {
+      width: entry.contentRect.width,
+      height: entry.contentRect.height,
+    }
+  })
+  viewportObserver.observe(viewport)
+  viewportSize.value = {
+    width: viewport.clientWidth,
+    height: viewport.clientHeight,
+  }
+}
+
 onMounted(() => {
   appRef.value?.focus()
   if (images.value.length > 0) {
     loadCurrentImage()
   }
+  nextTick(() => attachViewportObserver())
+})
+
+onBeforeUnmount(() => {
+  viewportObserver?.disconnect()
+  viewportObserver = null
+})
+
+watch(
+  () => images.value.length,
+  (length) => {
+    if (length > 0) {
+      nextTick(() => attachViewportObserver())
+    }
+  }
+)
+
+watch(currentIndex, () => {
+  resetZoom()
 })
 
 watch(imageLoaded, (loaded) => {
-  if (loaded) {
+  const canvas = canvasRef.value
+  if (loaded && canvas) {
+    canvasPixelSize.value = { width: canvas.width, height: canvas.height }
     resetCursorToCenter()
     nextTick(() => drawMagnifier())
+  } else {
+    canvasPixelSize.value = { width: 0, height: 0 }
+    resetZoom()
   }
 })
 

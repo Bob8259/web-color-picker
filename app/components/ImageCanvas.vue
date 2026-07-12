@@ -1,6 +1,6 @@
 <template>
-  <div class="flex-1 flex items-center justify-center min-h-0 min-w-0 relative">
-    <div class="relative inline-block max-w-full max-h-full" ref="containerRef">
+  <div class="relative inline-block">
+    <div class="relative inline-block" ref="containerRef">
       <div class="p-[2px] bg-gradient-to-br from-violet-400 via-fuchsia-300 to-indigo-400 shadow-lg shadow-violet-100">
         <!-- Canvas slot �?rendered by parent so refs stay in parent scope -->
         <slot name="canvas" />
