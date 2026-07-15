@@ -43,7 +43,7 @@ const holdings = ref<Holding[]>([
   // iShares S&P 500 Swap UCITS ETF on Euronext Amsterdam (AEB)
   { ticker: 'I500 (AEB)', yahooSymbol: 'I500.AS', position: 3420.9373, averageCost: 11.1961 },
   { ticker: 'QQQM', yahooSymbol: 'QQQM', position: 19.021, averageCost: 298.39 },
-  { ticker: 'SPMO', yahooSymbol: 'SPMO', position: 35.6255, averageCost: 156.92 },
+  { ticker: 'SPMO', yahooSymbol: 'SPMO', position: 47.1528, averageCost: 155.8 },
   { ticker: 'MSFT', yahooSymbol: 'MSFT', position: 5.2996, averageCost: 377.45 },
 ])
 
