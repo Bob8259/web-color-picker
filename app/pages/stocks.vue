@@ -45,6 +45,7 @@ const holdings = ref<Holding[]>([
   { ticker: 'QQQM', yahooSymbol: 'QQQM', position: 19.021, averageCost: 298.39 },
   { ticker: 'SPMO', yahooSymbol: 'SPMO', position: 47.1528, averageCost: 155.8 },
   { ticker: 'MSFT', yahooSymbol: 'MSFT', position: 5.2996, averageCost: 377.45 },
+  { ticker: 'AVGS.L', yahooSymbol: 'AVGS.L', position: 251.5927, averageCost: 28.55 },
 ])
 
 const symbols = computed(() =>
