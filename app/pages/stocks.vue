@@ -1,114 +1,111 @@
 <script setup lang="ts">
 useHead({
-  title: 'Simulate Portfolio',
-})
+  title: "Simulate Portfolio",
+});
 
 interface Holding {
-  ticker: string
+  ticker: string;
   /** Yahoo Finance symbol used for live quotes */
-  yahooSymbol: string
-  position: number
-  averageCost: number
+  yahooSymbol: string;
+  position: number;
+  averageCost: number;
   /** True when added via the planned-purchase form */
-  isPlanned?: boolean
+  isPlanned?: boolean;
 }
 
 interface Quote {
-  symbol: string
-  price: number | null
-  regularMarketPrice: number | null
-  currency: string | null
-  previousClose: number | null
-  session: 'pre' | 'regular' | 'post' | 'closed' | 'unknown'
-  priceTime: number | null
-  error?: string
+  symbol: string;
+  price: number | null;
+  regularMarketPrice: number | null;
+  currency: string | null;
+  previousClose: number | null;
+  session: "pre" | "regular" | "post" | "closed" | "unknown";
+  priceTime: number | null;
+  error?: string;
 }
 
 const CHART_COLORS = [
-  '#6366f1', // indigo
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#10b981', // emerald
-  '#f59e0b', // amber
-  '#f43f5e', // rose
-  '#ec4899', // pink
-  '#14b8a6', // teal
-  '#a855f7', // purple
-  '#eab308', // yellow
-]
+  "#6366f1", // indigo
+  "#8b5cf6", // violet
+  "#06b6d4", // cyan
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#f43f5e", // rose
+  "#ec4899", // pink
+  "#14b8a6", // teal
+  "#a855f7", // purple
+  "#eab308", // yellow
+];
 
 const holdings = ref<Holding[]>([
-  { ticker: 'VHYA.L', yahooSymbol: 'VHYA.L', position: 75.9858, averageCost: 104.08 },
-  { ticker: 'VICI', yahooSymbol: 'VICI', position: 209.8176, averageCost: 27.4 },
-  // iShares S&P 500 Swap UCITS ETF on Euronext Amsterdam (AEB)
-  { ticker: 'I500 (AEB)', yahooSymbol: 'I500.AS', position: 3420.9373, averageCost: 11.1961 },
-  { ticker: 'QQQM', yahooSymbol: 'QQQM', position: 19.021, averageCost: 298.39 },
-  { ticker: 'SPMO', yahooSymbol: 'SPMO', position: 47.1528, averageCost: 155.8 },
-  { ticker: 'MSFT', yahooSymbol: 'MSFT', position: 5.2996, averageCost: 377.45 },
-  { ticker: 'AVGS.L', yahooSymbol: 'AVGS.L', position: 251.5927, averageCost: 28.55 },
-])
+  { ticker: "VHYA.L", yahooSymbol: "VHYA.L", position: 75.9858, averageCost: 104.08 },
+  { ticker: "VICI", yahooSymbol: "VICI", position: 209.8176, averageCost: 27.4 },
+  { ticker: "I500", yahooSymbol: "I500.AS", position: 3420.9373, averageCost: 11.1961 },
+  { ticker: "QQQM", yahooSymbol: "QQQM", position: 19.021, averageCost: 298.39 },
+  { ticker: "SPMO", yahooSymbol: "SPMO", position: 47.1528, averageCost: 155.8 },
+  { ticker: "MSFT", yahooSymbol: "MSFT", position: 5.2996, averageCost: 377.45 },
+  { ticker: "AVGS", yahooSymbol: "AVGS.L", position: 251.5927, averageCost: 28.55 },
+]);
 
-const symbols = computed(() =>
-  holdings.value.map((h) => h.yahooSymbol).join(','),
-)
+const symbols = computed(() => holdings.value.map((h) => h.yahooSymbol).join(","));
 
 const {
   data: quotesData,
   pending: quotesPending,
   error: quotesError,
   refresh: refreshQuotes,
-} = await useFetch<{ quotes: Record<string, Quote> }>('/api/quotes', {
+} = await useFetch<{ quotes: Record<string, Quote> }>("/api/quotes", {
   query: computed(() => ({ symbols: symbols.value })),
   watch: [symbols],
   server: true,
-})
+});
 
-const lastUpdated = ref<Date | null>(null)
+const lastUpdated = ref<Date | null>(null);
 
 watch(
   quotesData,
   (val) => {
-    if (val?.quotes) lastUpdated.value = new Date()
+    if (val?.quotes) lastUpdated.value = new Date();
   },
   { immediate: true },
-)
+);
 
 async function onRefresh() {
-  await refreshQuotes()
-  lastUpdated.value = new Date()
+  await refreshQuotes();
+  lastUpdated.value = new Date();
 }
 
 // --- Planned purchase form (multi-stock) ---
 interface PlanRow {
-  id: number
-  ticker: string
-  amount: string
+  id: number;
+  ticker: string;
+  amount: string;
 }
 
-let planRowId = 0
+let planRowId = 0;
 function createPlanRow(): PlanRow {
-  return { id: ++planRowId, ticker: '', amount: '' }
+  return { id: ++planRowId, ticker: "", amount: "" };
 }
 
-const planRows = ref<PlanRow[]>([createPlanRow(), createPlanRow()])
-const planPending = ref(false)
-const planError = ref<string | null>(null)
-const planSuccess = ref<string | null>(null)
+const planRows = ref<PlanRow[]>([createPlanRow(), createPlanRow()]);
+const planPending = ref(false);
+const planError = ref<string | null>(null);
+const planSuccess = ref<string | null>(null);
 
 function normalizeTicker(raw: string): string {
-  return raw.trim().toUpperCase()
+  return raw.trim().toUpperCase();
 }
 
 function addPlanRow() {
-  planRows.value.push(createPlanRow())
+  planRows.value.push(createPlanRow());
 }
 
 function removePlanRow(id: number) {
   if (planRows.value.length <= 1) {
-    planRows.value = [createPlanRow()]
-    return
+    planRows.value = [createPlanRow()];
+    return;
   }
-  planRows.value = planRows.value.filter((r) => r.id !== id)
+  planRows.value = planRows.value.filter((r) => r.id !== id);
 }
 
 function applyPurchase(
@@ -117,25 +114,25 @@ function applyPurchase(
   price: number,
   currency: string | null,
 ): string {
-  const shares = amount / price
+  const shares = amount / price;
   const existingIdx = holdings.value.findIndex(
     (h) => h.yahooSymbol.toUpperCase() === ticker || h.ticker.toUpperCase() === ticker,
-  )
+  );
 
   if (existingIdx >= 0) {
-    const existing = holdings.value[existingIdx]!
-    const oldCost = existing.position * existing.averageCost
-    const newPosition = existing.position + shares
-    const newAvgCost = newPosition > 0 ? (oldCost + amount) / newPosition : price
+    const existing = holdings.value[existingIdx]!;
+    const oldCost = existing.position * existing.averageCost;
+    const newPosition = existing.position + shares;
+    const newAvgCost = newPosition > 0 ? (oldCost + amount) / newPosition : price;
 
     holdings.value[existingIdx] = {
       ...existing,
       position: newPosition,
       averageCost: newAvgCost,
       isPlanned: existing.isPlanned ?? false,
-    }
+    };
 
-    return `${existing.ticker}: +${formatNumber(shares, 4)} sh @ ${formatPrice(price, currency)} → ${formatNumber(newPosition, 4)} sh`
+    return `${existing.ticker}: +${formatNumber(shares, 4)} sh @ ${formatPrice(price, currency)} → ${formatNumber(newPosition, 4)} sh`;
   }
 
   holdings.value.push({
@@ -144,338 +141,346 @@ function applyPurchase(
     position: shares,
     averageCost: price,
     isPlanned: true,
-  })
+  });
 
-  return `${ticker}: ${formatNumber(shares, 4)} sh for $${formatNumber(amount, 2)} @ ${formatPrice(price, currency)}`
+  return `${ticker}: ${formatNumber(shares, 4)} sh for $${formatNumber(amount, 2)} @ ${formatPrice(price, currency)}`;
 }
 
 async function onAddPlannedPurchase() {
-  planError.value = null
-  planSuccess.value = null
+  planError.value = null;
+  planSuccess.value = null;
 
-  const merged = new Map<string, number>()
-  const emptyOrInvalid: string[] = []
+  const merged = new Map<string, number>();
+  const emptyOrInvalid: string[] = [];
 
   for (const row of planRows.value) {
-    const ticker = normalizeTicker(row.ticker)
+    const ticker = normalizeTicker(row.ticker);
     // number inputs can bind as number; coerce before trim
-    const amountRaw = String(row.amount ?? '').trim()
+    const amountRaw = String(row.amount ?? "").trim();
 
-    if (!ticker && !amountRaw) continue
+    if (!ticker && !amountRaw) continue;
 
     if (!ticker) {
-      emptyOrInvalid.push('A row is missing a ticker symbol.')
-      continue
+      emptyOrInvalid.push("A row is missing a ticker symbol.");
+      continue;
     }
-    const amount = Number(amountRaw)
+    const amount = Number(amountRaw);
     if (!Number.isFinite(amount) || amount <= 0) {
-      emptyOrInvalid.push(`${ticker}: enter a valid amount greater than zero.`)
-      continue
+      emptyOrInvalid.push(`${ticker}: enter a valid amount greater than zero.`);
+      continue;
     }
-    merged.set(ticker, (merged.get(ticker) ?? 0) + amount)
+    merged.set(ticker, (merged.get(ticker) ?? 0) + amount);
   }
 
   if (emptyOrInvalid.length > 0) {
-    planError.value = emptyOrInvalid[0] ?? 'Invalid input.'
-    return
+    planError.value = emptyOrInvalid[0] ?? "Invalid input.";
+    return;
   }
 
   if (merged.size === 0) {
-    planError.value = 'Add at least one ticker and purchase amount.'
-    return
+    planError.value = "Add at least one ticker and purchase amount.";
+    return;
   }
 
-  planPending.value = true
+  planPending.value = true;
   try {
-    const tickers = [...merged.keys()]
-    const data = await $fetch<{ quotes: Record<string, Quote> }>('/api/quotes', {
-      query: { symbols: tickers.join(',') },
-    })
+    const tickers = [...merged.keys()];
+    const data = await $fetch<{ quotes: Record<string, Quote> }>("/api/quotes", {
+      query: { symbols: tickers.join(",") },
+    });
 
-    const successes: string[] = []
-    const failures: string[] = []
+    const successes: string[] = [];
+    const failures: string[] = [];
 
     for (const [ticker, amount] of merged) {
       const quote =
         data.quotes?.[ticker] ??
-        data.quotes?.[Object.keys(data.quotes ?? {}).find((k) => k.toUpperCase() === ticker) ?? '']
-      const price = quote?.price ?? null
+        data.quotes?.[Object.keys(data.quotes ?? {}).find((k) => k.toUpperCase() === ticker) ?? ""];
+      const price = quote?.price ?? null;
 
       if (price == null || price <= 0) {
         failures.push(
-          quote?.error
-            ? `${ticker}: ${quote.error}`
-            : `${ticker}: no live price found`,
-        )
-        continue
+          quote?.error ? `${ticker}: ${quote.error}` : `${ticker}: no live price found`,
+        );
+        continue;
       }
 
-      successes.push(applyPurchase(ticker, amount, price, quote?.currency ?? 'USD'))
+      successes.push(applyPurchase(ticker, amount, price, quote?.currency ?? "USD"));
     }
 
     if (successes.length > 0) {
-      planSuccess.value = `Added ${successes.length} purchase${successes.length > 1 ? 's' : ''}: ${successes.join(' · ')}`
-      planRows.value = [createPlanRow(), createPlanRow()]
-      await refreshQuotes()
-      lastUpdated.value = new Date()
+      planSuccess.value = `Added ${successes.length} purchase${successes.length > 1 ? "s" : ""}: ${successes.join(" · ")}`;
+      planRows.value = [createPlanRow(), createPlanRow()];
+      await refreshQuotes();
+      lastUpdated.value = new Date();
     }
 
     if (failures.length > 0) {
-      planError.value = failures.join(' · ')
+      planError.value = failures.join(" · ");
     }
   } catch (err) {
-    planError.value = err instanceof Error ? err.message : 'Failed to look up ticker prices.'
+    planError.value = err instanceof Error ? err.message : "Failed to look up ticker prices.";
   } finally {
-    planPending.value = false
+    planPending.value = false;
   }
 }
 
 function removeHolding(ticker: string) {
-  holdings.value = holdings.value.filter((h) => h.ticker !== ticker)
+  holdings.value = holdings.value.filter((h) => h.ticker !== ticker);
 }
 
 const holdingsWithMetrics = computed(() =>
   holdings.value.map((h, i) => {
-    const quote = quotesData.value?.quotes?.[h.yahooSymbol]
-    const currentPrice = quote?.price ?? null
-    const costBasis = h.position * h.averageCost
-    const marketValue = currentPrice != null ? h.position * currentPrice : null
-    const unrealizedPl = marketValue != null ? marketValue - costBasis : null
+    const quote = quotesData.value?.quotes?.[h.yahooSymbol];
+    const currentPrice = quote?.price ?? null;
+    const costBasis = h.position * h.averageCost;
+    const marketValue = currentPrice != null ? h.position * currentPrice : null;
+    const unrealizedPl = marketValue != null ? marketValue - costBasis : null;
     const unrealizedPlPct =
-      unrealizedPl != null && costBasis !== 0 ? (unrealizedPl / costBasis) * 100 : null
+      unrealizedPl != null && costBasis !== 0 ? (unrealizedPl / costBasis) * 100 : null;
 
     return {
       ...h,
       color: CHART_COLORS[i % CHART_COLORS.length] as string,
       currentPrice,
       regularMarketPrice: quote?.regularMarketPrice ?? null,
-      session: (quote?.session ?? 'unknown') as Quote['session'],
+      session: (quote?.session ?? "unknown") as Quote["session"],
       currency: quote?.currency ?? null,
       costBasis,
       marketValue,
       unrealizedPl,
       unrealizedPlPct,
       quoteError: quote?.error,
-    }
+    };
   }),
-)
+);
 
 const totalMarketValue = computed(() =>
   holdingsWithMetrics.value.reduce((sum, h) => sum + (h.marketValue ?? 0), 0),
-)
+);
 
 const totalCostBasis = computed(() =>
   holdingsWithMetrics.value.reduce((sum, h) => sum + h.costBasis, 0),
-)
+);
 
-const totalUnrealizedPl = computed(() => totalMarketValue.value - totalCostBasis.value)
+const totalUnrealizedPl = computed(() => totalMarketValue.value - totalCostBasis.value);
 
 const totalUnrealizedPlPct = computed(() =>
   totalCostBasis.value !== 0 ? (totalUnrealizedPl.value / totalCostBasis.value) * 100 : 0,
-)
+);
 
-const pricesReady = computed(() =>
-  holdingsWithMetrics.value.some((h) => h.marketValue != null),
-)
+const pricesReady = computed(() => holdingsWithMetrics.value.some((h) => h.marketValue != null));
 
 const holdingsWithShare = computed(() => {
-  const total = totalMarketValue.value
+  const total = totalMarketValue.value;
   return holdingsWithMetrics.value.map((h) => ({
     ...h,
     share: total > 0 && h.marketValue != null ? (h.marketValue / total) * 100 : 0,
-  }))
-})
+  }));
+});
 
 /** Build SVG pie path for a slice from startAngle to endAngle (degrees, 0 = top). */
-function describeArc(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
-  const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180
+function describeArc(
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+): string {
+  const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180;
   const start = {
     x: cx + r * Math.cos(toRad(startAngle)),
     y: cy + r * Math.sin(toRad(startAngle)),
-  }
+  };
   const end = {
     x: cx + r * Math.cos(toRad(endAngle)),
     y: cy + r * Math.sin(toRad(endAngle)),
-  }
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0
+  };
+  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
   return [
     `M ${cx} ${cy}`,
     `L ${start.x} ${start.y}`,
     `A ${r} ${r} 0 ${largeArc} 1 ${end.x} ${end.y}`,
-    'Z',
-  ].join(' ')
+    "Z",
+  ].join(" ");
 }
 
 const pieSlices = computed(() => {
-  let angle = 0
-  const cx = 100
-  const cy = 100
-  const r = 90
-  const withValue = holdingsWithShare.value.filter((h) => h.marketValue != null && h.marketValue > 0)
+  let angle = 0;
+  const cx = 100;
+  const cy = 100;
+  const r = 90;
+  const withValue = holdingsWithShare.value.filter(
+    (h) => h.marketValue != null && h.marketValue > 0,
+  );
   return withValue.map((h) => {
-    const sweep = (h.share / 100) * 360
+    const sweep = (h.share / 100) * 360;
     const path =
       sweep >= 359.99
         ? `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`
-        : describeArc(cx, cy, r, angle, angle + Math.max(sweep, 0.01))
+        : describeArc(cx, cy, r, angle, angle + Math.max(sweep, 0.01));
     const slice = {
       ...h,
       path,
       startAngle: angle,
       endAngle: angle + sweep,
-    }
-    angle += sweep
-    return slice
-  })
-})
+    };
+    angle += sweep;
+    return slice;
+  });
+});
 
 // --- Interactive pie chart state ---
-const activeSliceTicker = ref<string | null>(null)
-const tooltipVisible = ref(false)
-const tooltipX = ref(0)
-const tooltipY = ref(0)
-const pieChartContainerRef = ref<HTMLElement | null>(null)
+const activeSliceTicker = ref<string | null>(null);
+const tooltipVisible = ref(false);
+const tooltipX = ref(0);
+const tooltipY = ref(0);
+const pieChartContainerRef = ref<HTMLElement | null>(null);
 
 const activeSlice = computed(
   () => pieSlices.value.find((s) => s.ticker === activeSliceTicker.value) ?? null,
-)
+);
 
 function updateTooltipPosition(clientX: number, clientY: number) {
-  const el = pieChartContainerRef.value
-  if (!el) return
-  const rect = el.getBoundingClientRect()
-  tooltipX.value = clientX - rect.left
-  tooltipY.value = clientY - rect.top
+  const el = pieChartContainerRef.value;
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+  tooltipX.value = clientX - rect.left;
+  tooltipY.value = clientY - rect.top;
 }
 
 function onSliceEnter(ticker: string, event: MouseEvent) {
-  activeSliceTicker.value = ticker
-  tooltipVisible.value = true
-  updateTooltipPosition(event.clientX, event.clientY)
+  activeSliceTicker.value = ticker;
+  tooltipVisible.value = true;
+  updateTooltipPosition(event.clientX, event.clientY);
 }
 
 function onSliceMove(event: MouseEvent) {
-  if (!tooltipVisible.value) return
-  updateTooltipPosition(event.clientX, event.clientY)
+  if (!tooltipVisible.value) return;
+  updateTooltipPosition(event.clientX, event.clientY);
 }
 
 function onSliceLeave() {
-  activeSliceTicker.value = null
-  tooltipVisible.value = false
+  activeSliceTicker.value = null;
+  tooltipVisible.value = false;
 }
 
 function onSliceTap(ticker: string, event: MouseEvent | TouchEvent) {
   if (activeSliceTicker.value === ticker && tooltipVisible.value) {
-    activeSliceTicker.value = null
-    tooltipVisible.value = false
-    return
+    activeSliceTicker.value = null;
+    tooltipVisible.value = false;
+    return;
   }
-  activeSliceTicker.value = ticker
-  tooltipVisible.value = true
+  activeSliceTicker.value = ticker;
+  tooltipVisible.value = true;
 
-  if ('touches' in event && event.touches[0]) {
-    updateTooltipPosition(event.touches[0].clientX, event.touches[0].clientY)
-  } else if ('clientX' in event) {
-    updateTooltipPosition(event.clientX, event.clientY)
+  if ("touches" in event && event.touches[0]) {
+    updateTooltipPosition(event.touches[0].clientX, event.touches[0].clientY);
+  } else if ("clientX" in event) {
+    updateTooltipPosition(event.clientX, event.clientY);
   }
 }
 
 function onChartLeave() {
-  activeSliceTicker.value = null
-  tooltipVisible.value = false
+  activeSliceTicker.value = null;
+  tooltipVisible.value = false;
 }
 
 function onLegendEnter(ticker: string) {
-  activeSliceTicker.value = ticker
-  tooltipVisible.value = false
+  activeSliceTicker.value = ticker;
+  tooltipVisible.value = false;
 }
 
 function onLegendLeave() {
-  activeSliceTicker.value = null
+  activeSliceTicker.value = null;
 }
 
 function onLegendClick(ticker: string) {
-  activeSliceTicker.value = activeSliceTicker.value === ticker ? null : ticker
-  tooltipVisible.value = false
+  activeSliceTicker.value = activeSliceTicker.value === ticker ? null : ticker;
+  tooltipVisible.value = false;
 }
 
 const largestTicker = computed(() => {
-  const withValue = holdingsWithShare.value.filter((h) => h.marketValue != null)
-  if (withValue.length === 0) return '—'
-  const sorted = [...withValue].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0))
-  return sorted[0]?.ticker ?? '—'
-})
+  const withValue = holdingsWithShare.value.filter((h) => h.marketValue != null);
+  if (withValue.length === 0) return "—";
+  const sorted = [...withValue].sort((a, b) => (b.marketValue ?? 0) - (a.marketValue ?? 0));
+  return sorted[0]?.ticker ?? "—";
+});
 
 function formatNumber(n: number, decimals = 2): string {
   return n.toLocaleString(undefined, {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
-  })
+  });
 }
 
-function formatCurrency(n: number, currency = 'USD'): string {
+function formatCurrency(n: number, currency = "USD"): string {
   try {
     return n.toLocaleString(undefined, {
-      style: 'currency',
+      style: "currency",
       currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    })
+    });
   } catch {
-    return `${currency} ${formatNumber(n, 2)}`
+    return `${currency} ${formatNumber(n, 2)}`;
   }
 }
 
 function formatPrice(n: number | null, currency: string | null): string {
-  if (n == null) return '—'
-  return formatCurrency(n, currency ?? 'USD')
+  if (n == null) return "—";
+  return formatCurrency(n, currency ?? "USD");
 }
 
-function formatPl(n: number | null, currency: string | null = 'USD'): string {
-  if (n == null) return '—'
-  const sign = n > 0 ? '+' : ''
-  return `${sign}${formatCurrency(n, currency ?? 'USD')}`
+function formatPl(n: number | null, currency: string | null = "USD"): string {
+  if (n == null) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${formatCurrency(n, currency ?? "USD")}`;
 }
 
 function formatPlPct(n: number | null): string {
-  if (n == null) return '—'
-  const sign = n > 0 ? '+' : ''
-  return `${sign}${formatNumber(n, 2)}%`
+  if (n == null) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${formatNumber(n, 2)}%`;
 }
 
 function plClass(n: number | null): string {
-  if (n == null || n === 0) return 'text-slate-500'
-  return n > 0 ? 'text-emerald-600' : 'text-rose-600'
+  if (n == null || n === 0) return "text-slate-500";
+  return n > 0 ? "text-emerald-600" : "text-rose-600";
 }
 
 function plBadgeClass(n: number | null): string {
-  if (n == null || n === 0) return 'bg-slate-100 text-slate-600'
-  return n > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+  if (n == null || n === 0) return "bg-slate-100 text-slate-600";
+  return n > 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700";
 }
 
 function formatTime(d: Date | null): string {
-  if (!d) return '—'
-  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  if (!d) return "—";
+  return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-function sessionLabel(session: Quote['session']): string | null {
-  if (session === 'pre') return 'PRE'
-  if (session === 'post') return 'POST'
-  return null
+function sessionLabel(session: Quote["session"]): string | null {
+  if (session === "pre") return "PRE";
+  if (session === "post") return "POST";
+  return null;
 }
 
-function sessionBadgeClass(session: Quote['session']): string {
-  if (session === 'pre') return 'bg-amber-50 text-amber-700'
-  if (session === 'post') return 'bg-violet-50 text-violet-700'
-  return 'bg-slate-100 text-slate-600'
+function sessionBadgeClass(session: Quote["session"]): string {
+  if (session === "pre") return "bg-amber-50 text-amber-700";
+  if (session === "post") return "bg-violet-50 text-violet-700";
+  return "bg-slate-100 text-slate-600";
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-slate-50">
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-sm z-10">
-      <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+    <div
+      class="flex items-center justify-between px-6 py-3 bg-white border-b border-slate-200 shadow-sm z-10"
+    >
+      <h1
+        class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent"
+      >
         Simulate Portfolio
       </h1>
       <div class="flex items-center gap-4">
@@ -510,7 +515,7 @@ function sessionBadgeClass(session: Quote['session']): string {
         <div class="text-sm text-slate-500">
           Total value
           <span class="ml-2 font-semibold text-slate-900 tabular-nums">
-            {{ pricesReady ? formatCurrency(totalMarketValue) : '—' }}
+            {{ pricesReady ? formatCurrency(totalMarketValue) : "—" }}
           </span>
         </div>
       </div>
@@ -531,7 +536,8 @@ function sessionBadgeClass(session: Quote['session']): string {
           <div>
             <h2 class="text-sm font-semibold text-slate-900">Plan purchases</h2>
             <p class="text-xs text-slate-500 mt-0.5">
-              Add one or more tickers with dollar amounts. Shares are calculated from live / extended-hours prices.
+              Add one or more tickers with dollar amounts. Shares are calculated from live /
+              extended-hours prices.
             </p>
           </div>
           <button
@@ -557,7 +563,10 @@ function sessionBadgeClass(session: Quote['session']): string {
             class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center"
           >
             <div class="sm:col-span-5">
-              <label :for="`plan-ticker-${row.id}`" class="sm:hidden block text-xs font-medium text-slate-600 mb-1.5">
+              <label
+                :for="`plan-ticker-${row.id}`"
+                class="sm:hidden block text-xs font-medium text-slate-600 mb-1.5"
+              >
                 Ticker symbol
               </label>
               <input
@@ -572,11 +581,16 @@ function sessionBadgeClass(session: Quote['session']): string {
               />
             </div>
             <div class="sm:col-span-5">
-              <label :for="`plan-amount-${row.id}`" class="sm:hidden block text-xs font-medium text-slate-600 mb-1.5">
+              <label
+                :for="`plan-amount-${row.id}`"
+                class="sm:hidden block text-xs font-medium text-slate-600 mb-1.5"
+              >
                 Amount to invest ($)
               </label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">$</span>
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400"
+                  >$</span
+                >
                 <input
                   :id="`plan-amount-${row.id}`"
                   v-model="row.amount"
@@ -619,10 +633,21 @@ function sessionBadgeClass(session: Quote['session']): string {
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
               </svg>
-              <span>{{ planPending ? 'Looking up prices…' : 'Add all to holdings' }}</span>
+              <span>{{ planPending ? "Looking up prices…" : "Add all to holdings" }}</span>
             </button>
           </div>
         </form>
@@ -630,7 +655,6 @@ function sessionBadgeClass(session: Quote['session']): string {
         <p v-if="planError" class="mt-3 text-sm text-rose-600">{{ planError }}</p>
         <p v-if="planSuccess" class="mt-3 text-sm text-emerald-600">{{ planSuccess }}</p>
       </div>
-
 
       <!-- Summary cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -641,15 +665,22 @@ function sessionBadgeClass(session: Quote['session']): string {
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
           <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Market value</p>
           <p class="mt-1 text-2xl font-bold text-slate-900 tabular-nums">
-            {{ pricesReady ? formatCurrency(totalMarketValue) : '—' }}
+            {{ pricesReady ? formatCurrency(totalMarketValue) : "—" }}
           </p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
           <p class="text-xs font-medium text-slate-500 uppercase tracking-wide">Unrealized P/L</p>
-          <p class="mt-1 text-2xl font-bold tabular-nums" :class="plClass(pricesReady ? totalUnrealizedPl : null)">
-            {{ pricesReady ? formatPl(totalUnrealizedPl) : '—' }}
+          <p
+            class="mt-1 text-2xl font-bold tabular-nums"
+            :class="plClass(pricesReady ? totalUnrealizedPl : null)"
+          >
+            {{ pricesReady ? formatPl(totalUnrealizedPl) : "—" }}
           </p>
-          <p v-if="pricesReady" class="mt-0.5 text-xs font-medium tabular-nums" :class="plClass(totalUnrealizedPl)">
+          <p
+            v-if="pricesReady"
+            class="mt-0.5 text-xs font-medium tabular-nums"
+            :class="plClass(totalUnrealizedPl)"
+          >
             {{ formatPlPct(totalUnrealizedPlPct) }}
           </p>
         </div>
@@ -661,11 +692,18 @@ function sessionBadgeClass(session: Quote['session']): string {
 
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <!-- Pie chart (by current market value) -->
-        <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col">
+        <div
+          class="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm p-6 flex flex-col"
+        >
           <h2 class="text-sm font-semibold text-slate-900 mb-1">Composition by market value</h2>
-          <p class="text-xs text-slate-500 mb-4">Live / extended-hours prices · hover or tap a slice</p>
+          <p class="text-xs text-slate-500 mb-4">
+            Live / extended-hours prices · hover or tap a slice
+          </p>
           <div class="flex-1 flex flex-col items-center justify-center gap-6">
-            <div v-if="quotesPending && !pricesReady" class="w-56 h-56 rounded-full bg-slate-100 animate-pulse" />
+            <div
+              v-if="quotesPending && !pricesReady"
+              class="w-56 h-56 rounded-full bg-slate-100 animate-pulse"
+            />
 
             <div
               v-else-if="pieSlices.length > 0"
@@ -694,7 +732,11 @@ function sessionBadgeClass(session: Quote['session']): string {
                   "
                   :style="
                     activeSliceTicker === slice.ticker
-                      ? { filter: 'brightness(1.08)', transform: 'scale(1.03)', transformOrigin: '100px 100px' }
+                      ? {
+                          filter: 'brightness(1.08)',
+                          transform: 'scale(1.03)',
+                          transformOrigin: '100px 100px',
+                        }
                       : undefined
                   "
                   stroke="#fff"
@@ -739,7 +781,7 @@ function sessionBadgeClass(session: Quote['session']): string {
                     text-anchor="middle"
                     class="fill-slate-900 text-[11px] font-bold pointer-events-none"
                   >
-                    {{ formatCurrency(totalMarketValue).replace(/\.00$/, '') }}
+                    {{ formatCurrency(totalMarketValue).replace(/\.00$/, "") }}
                   </text>
                 </template>
               </svg>
@@ -761,13 +803,20 @@ function sessionBadgeClass(session: Quote['session']): string {
                     {{ formatNumber(activeSlice.share, 1) }}%
                   </span>
                   <span class="text-xs tabular-nums text-slate-500">
-                    {{ activeSlice.marketValue != null ? formatPrice(activeSlice.marketValue, activeSlice.currency) : '—' }}
+                    {{
+                      activeSlice.marketValue != null
+                        ? formatPrice(activeSlice.marketValue, activeSlice.currency)
+                        : "—"
+                    }}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div v-else class="w-56 h-56 flex items-center justify-center text-sm text-slate-400 text-center px-4">
+            <div
+              v-else
+              class="w-56 h-56 flex items-center justify-center text-sm text-slate-400 text-center px-4"
+            >
               No live prices available for chart
             </div>
 
@@ -801,7 +850,7 @@ function sessionBadgeClass(session: Quote['session']): string {
                   </span>
                 </div>
                 <span class="text-slate-500 tabular-nums flex-shrink-0">
-                  {{ h.marketValue != null ? `${formatNumber(h.share, 1)}%` : '—' }}
+                  {{ h.marketValue != null ? `${formatNumber(h.share, 1)}%` : "—" }}
                 </span>
               </li>
             </ul>
@@ -809,7 +858,9 @@ function sessionBadgeClass(session: Quote['session']): string {
         </div>
 
         <!-- Holdings table -->
-        <div class="lg:col-span-3 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div
+          class="lg:col-span-3 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden"
+        >
           <div class="px-6 py-4 border-b border-slate-200 flex items-start justify-between gap-3">
             <div>
               <h2 class="text-sm font-semibold text-slate-900">Holdings</h2>
@@ -827,7 +878,9 @@ function sessionBadgeClass(session: Quote['session']): string {
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <tr
+                  class="bg-slate-50 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide"
+                >
                   <th class="px-4 py-3">Ticker</th>
                   <th class="px-4 py-3 text-right">Position</th>
                   <th class="px-4 py-3 text-right">Avg cost</th>
@@ -861,7 +914,10 @@ function sessionBadgeClass(session: Quote['session']): string {
                             New
                           </span>
                         </div>
-                        <div v-if="h.yahooSymbol !== h.ticker" class="text-[10px] text-slate-400 font-mono">
+                        <div
+                          v-if="h.yahooSymbol !== h.ticker"
+                          class="text-[10px] text-slate-400 font-mono"
+                        >
                           {{ h.yahooSymbol }}
                         </div>
                       </div>
@@ -880,19 +936,28 @@ function sessionBadgeClass(session: Quote['session']): string {
                         v-if="sessionLabel(h.session)"
                         class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide"
                         :class="sessionBadgeClass(h.session)"
-                        :title="h.regularMarketPrice != null ? `Regular close: ${formatPrice(h.regularMarketPrice, h.currency)}` : undefined"
+                        :title="
+                          h.regularMarketPrice != null
+                            ? `Regular close: ${formatPrice(h.regularMarketPrice, h.currency)}`
+                            : undefined
+                        "
                       >
                         {{ sessionLabel(h.session) }}
                       </span>
                     </div>
                     <span v-else class="text-slate-400" :title="h.quoteError">—</span>
                   </td>
-                  <td class="px-4 py-3 text-right font-mono tabular-nums font-medium text-slate-900">
-                    {{ h.marketValue != null ? formatPrice(h.marketValue, h.currency) : '—' }}
+                  <td
+                    class="px-4 py-3 text-right font-mono tabular-nums font-medium text-slate-900"
+                  >
+                    {{ h.marketValue != null ? formatPrice(h.marketValue, h.currency) : "—" }}
                   </td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex flex-col items-end gap-0.5">
-                      <span class="font-mono tabular-nums font-medium" :class="plClass(h.unrealizedPl)">
+                      <span
+                        class="font-mono tabular-nums font-medium"
+                        :class="plClass(h.unrealizedPl)"
+                      >
                         {{ formatPl(h.unrealizedPl, h.currency) }}
                       </span>
                       <span
@@ -905,8 +970,10 @@ function sessionBadgeClass(session: Quote['session']): string {
                     </div>
                   </td>
                   <td class="px-4 py-3 text-right">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 tabular-nums">
-                      {{ h.marketValue != null ? `${formatNumber(h.share, 1)}%` : '—' }}
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 tabular-nums"
+                    >
+                      {{ h.marketValue != null ? `${formatNumber(h.share, 1)}%` : "—" }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-right">
@@ -928,12 +995,15 @@ function sessionBadgeClass(session: Quote['session']): string {
                   <td class="px-4 py-3" />
                   <td class="px-4 py-3" />
                   <td class="px-4 py-3 text-right font-mono tabular-nums">
-                    {{ pricesReady ? formatCurrency(totalMarketValue) : '—' }}
+                    {{ pricesReady ? formatCurrency(totalMarketValue) : "—" }}
                   </td>
                   <td class="px-4 py-3 text-right">
                     <div class="flex flex-col items-end gap-0.5">
-                      <span class="font-mono tabular-nums" :class="plClass(pricesReady ? totalUnrealizedPl : null)">
-                        {{ pricesReady ? formatPl(totalUnrealizedPl) : '—' }}
+                      <span
+                        class="font-mono tabular-nums"
+                        :class="plClass(pricesReady ? totalUnrealizedPl : null)"
+                      >
+                        {{ pricesReady ? formatPl(totalUnrealizedPl) : "—" }}
                       </span>
                       <span
                         v-if="pricesReady"
@@ -945,7 +1015,9 @@ function sessionBadgeClass(session: Quote['session']): string {
                     </div>
                   </td>
                   <td class="px-4 py-3 text-right">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 tabular-nums">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 tabular-nums"
+                    >
                       100%
                     </span>
                   </td>
