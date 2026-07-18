@@ -582,10 +582,10 @@ async function copyPositionToClipboard() {
 
 async function copyColorToClipboard() {
   const color = getPixelColor(cursorPos.value.x, cursorPos.value.y)
-  const hex = color?.bgrHex ?? ''
+  const rgb = color ? `${color.r},${color.g},${color.b}` : ''
 
   try {
-    await copyTextToClipboard(hex)
+    await copyTextToClipboard(rgb)
   } catch (err) {
     console.error('Failed to copy color: ', err)
   }
